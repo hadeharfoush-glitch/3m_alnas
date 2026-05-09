@@ -3,79 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hadi | The Elite System</title>
+    <title>Hadi | Elite Dashboard</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@200;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@200;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #D4AF37;
-            --gold-glow: rgba(212, 175, 55, 0.3);
-            --bg: #000000;
-            --glass: rgba(255, 255, 255, 0.03);
-            --font-hadi: 'Alexandria', -apple-system, BlinkMacSystemFont, sans-serif;
+            --gold: #C5A059;
+            --gold-light: #E0C08D;
+            --bg: #050505;
+            --glass: rgba(255, 255, 255, 0.02);
+            --font-main: 'Alexandria', sans-serif;
+            --font-eng: 'Playfair Display', serif;
         }
 
         body {
             margin: 0;
             background: var(--bg);
-            background-image: radial-gradient(circle at top right, #151208 0%, #000000 70%);
+            background-image: radial-gradient(circle at top right, #1a1608 0%, #050505 70%);
             color: #fff;
-            font-family: var(--font-hadi);
+            font-family: var(--font-main);
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
-            user-select: none;
         }
 
-        .glass-panel {
+        .glass-card {
             background: var(--glass);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
-            transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(197, 160, 89, 0.1);
+            border-radius: 22px;
+            margin-bottom: 20px;
         }
 
-        .gold-border-active {
-            border: 1px solid var(--gold) !important;
-            box-shadow: 0 0 15px var(--gold-glow);
+        .eng-clock {
+            font-family: var(--font-eng);
+            font-size: 52px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--gold-light);
+            text-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
         }
 
-        .clock-text {
-            font-size: 42px;
-            font-weight: 200;
-            letter-spacing: -1px;
-            background: linear-gradient(to bottom, #fff, #888);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .day-box {
+            width: 40px; height: 50px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);
+            font-size: 11px; color: #666;
         }
 
-        .btn-action {
-            background: none;
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            padding: 12px;
-            border-radius: 14px;
-            font-family: var(--font-hadi);
-            font-weight: 400;
-            cursor: pointer;
-            width: 100%;
+        .active-day {
+            border-color: var(--gold);
+            background: rgba(197, 160, 89, 0.1);
+            color: var(--gold-light);
+            box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.1);
         }
 
-        .task-item {
+        .task-row {
             padding: 18px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: pointer;
+            display: flex; align-items: center; gap: 15px;
+            transition: 0.3s;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
         }
 
-        @keyframes pulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
+        .task-row:last-child { border-bottom: none; }
+
+        .check-gold {
+            width: 22px; height: 22px; border-radius: 6px;
+            border: 1.5px solid var(--gold);
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .btn-gold-outline {
+            background: none; border: 1px solid var(--gold);
+            color: var(--gold-light); padding: 15px;
+            border-radius: 15px; width: 100%; font-family: var(--font-main);
+            font-weight: 700; margin-top: 15px;
         }
     </style>
 </head>
@@ -83,116 +87,121 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect } = React;
 
-        const QUOTES = [
-            "الصمت هو أعلى مستويات الكاريزما.",
-            "خُلقنا لنترك أثراً، لا لنكون مجرد أرقام.",
-            "التميز يبدأ عندما ينتهي الجميع.",
-            "عِش في الظل، واصنع ضجيجك بالنتائج.",
-            "الغموض هو رداء الأقوياء.",
-            "تعلقتُ بشمسٍ؛ كانت لغيري مطلعاً، ولي مغيباً."
+        const ROUTINE_DATA = [
+            { title: "بداية الأثر", tasks: [
+                { id: "m1", label: "ارتواء (ماء)", icon: "💧" },
+                { id: "m2", label: "الحفظ الديني", icon: "📖" },
+                { id: "m3", label: "تغذية", icon: "🍳" }
+            ]},
+            { title: "ساعات العمل (القمة)", tasks: [
+                { id: "w1", label: "كورس الكوبي رايتينج", icon: "💼" },
+                { id: "w2", label: "إدارة قنوات اليوتيوب", icon: "🎬" },
+                { id: "w3", label: "تجهيز باقات مستقل", icon: "🎯" },
+                { id: "w4", label: "تطوير اللغة الإنجليزية", icon: "🌐" },
+                { id: "w5", label: "تفريغ طاقة (رياضة)", icon: "⚽" }
+            ]},
+            { title: "مراجعة الصمت", tasks: [
+                { id: "n1", label: "خاطرة اليوم", icon: "✍️" },
+                { id: "n2", label: "قراءة عميقة", icon: "📚" },
+                { id: "n3", label: "الهروب من الشاشة", icon: "📵" }
+            ]}
         ];
 
-        const TASKS = [
-            { id: 't1', label: 'كورس الكوبي رايتينج', icon: '✍️' },
-            { id: 't2', label: 'إدارة قنوات اليوتيوب', icon: '🎬' },
-            { id: 't3', label: 'تجهيز باقات مستقل', icon: '💼' },
-            { id: 't4', label: 'تطوير اللغة الإنجليزية', icon: '🌐' }
-        ];
+        const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
         function App() {
-            const [time, setTime] = useState(new Date());
+            const [now, setNow] = useState(new Date());
             const [checked, setChecked] = useState({});
-            const [score, setScore] = useState(0);
-            const [timer, setTimer] = useState(2700); // 45m
-            const [isTimerRunning, setIsTimerRunning] = useState(false);
-            
-            // Audio Effects
-            const clickSound = new Audio('https://www.soundjay.com/buttons/sounds/button-50.mp3');
-            const doneSound = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
+            const [isTimerOn, setIsTimerOn] = useState(false);
+            const [timeLeft, setTimeLeft] = useState(2700);
+
+            // Audio assets
+            const playClick = () => {
+                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+                audio.volume = 0.5;
+                audio.play();
+            };
 
             useEffect(() => {
-                const timerId = setInterval(() => setTime(new Date()), 1000);
-                return () => clearInterval(timerId);
+                const clock = setInterval(() => setNow(new Date()), 1000);
+                const saved = localStorage.getItem('hadi_tasks_v5');
+                if (saved) setChecked(JSON.parse(saved));
+                return () => clearInterval(clock);
             }, []);
 
             useEffect(() => {
-                let interval = null;
-                if (isTimerRunning && timer > 0) {
-                    interval = setInterval(() => setTimer(t => t - 1), 1000);
-                } else if (timer === 0) {
-                    setIsTimerRunning(false);
-                    setScore(s => s + 100);
-                    doneSound.play();
+                let interval;
+                if (isTimerOn && timeLeft > 0) {
+                    interval = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
                 }
                 return () => clearInterval(interval);
-            }, [isTimerRunning, timer]);
+            }, [isTimerOn, timeLeft]);
 
-            const handleToggle = (id) => {
-                clickSound.play();
+            const toggle = (id) => {
+                playClick();
                 const newChecked = { ...checked, [id]: !checked[id] };
                 setChecked(newChecked);
-                if (newChecked[id]) setScore(s => s + 20);
+                localStorage.setItem('hadi_tasks_v5', JSON.stringify(newChecked));
             };
 
-            const formatTime = (t) => {
-                const m = Math.floor(t / 60);
-                const s = t % 60;
-                return `${m}:${s < 10 ? '0' : ''}${s}`;
+            const formatClock = (date) => {
+                return date.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
             };
 
             return (
-                <div style={{ padding: '40px 25px', maxWidth: '450px', margin: '0 auto' }}>
+                <div style={{ padding: '30px 20px', maxWidth: '480px', margin: '0 auto' }}>
                     
-                    {/* Live Clock Section */}
-                    <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-                        <div className="clock-text">
-                            {time.toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                        <p style={{ color: 'var(--gold)', fontSize: '12px', letterSpacing: '2px', marginTop: '10px' }}>
-                            {QUOTES[time.getSeconds() % QUOTES.length]}
-                        </p>
-                    </div>
-
-                    {/* Stats Dashboard */}
-                    <div className="glass-panel" style={{ padding: '20px', marginBottom: '30px', display: 'flex', justifyContent: 'space-between' }}>
-                        <div>
-                            <div style={{ fontSize: '10px', color: '#888' }}>مستوى النخبة</div>
-                            <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--gold)' }}>{score} XP</div>
-                        </div>
-                        <div style={{ textAlign: 'left' }}>
-                            <div style={{ fontSize: '10px', color: '#888' }}>التاريخ</div>
-                            <div style={{ fontSize: '14px' }}>{time.toLocaleDateString('ar-SY')}</div>
-                        </div>
-                    </div>
-
-                    {/* Deep Focus Timer */}
-                    <div className={`glass-panel ${isTimerRunning ? 'gold-border-active' : ''}`} style={{ padding: '30px', textAlign: 'center', marginBottom: '30px' }}>
-                        <div style={{ fontSize: '11px', color: '#888', marginBottom: '10px' }}>جلسة العمل العميق</div>
-                        <div style={{ fontSize: '40px', fontWeight: '200', marginBottom: '20px' }}>{formatTime(timer)}</div>
-                        <button className="btn-action" onClick={() => { clickSound.play(); setIsTimerRunning(!isTimerRunning); }}>
-                            {isTimerRunning ? 'تعليق الجلسة' : 'بدء الانغماس'}
-                        </button>
-                    </div>
-
-                    {/* Tasks */}
-                    <div style={{ marginBottom: '40px' }}>
-                        <h3 style={{ fontSize: '14px', fontWeight: '400', color: '#888', marginBottom: '20px' }}>المهمات الاستراتيجية</h3>
-                        {TASKS.map(task => (
-                            <div key={task.id} 
-                                 onClick={() => handleToggle(task.id)}
-                                 className={`glass-panel task-item ${checked[task.id] ? 'gold-border-active' : ''}`}
-                                 style={{ opacity: checked[task.id] ? 0.4 : 1 }}>
-                                <span style={{ fontSize: '20px' }}>{task.icon}</span>
-                                <span style={{ fontSize: '14px', flex: 1 }}>{task.label}</span>
-                                {checked[task.id] && <span style={{ color: 'var(--gold)' }}>✓</span>}
+                    {/* Calendar Section */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
+                        {WEEKDAYS.map((day, i) => (
+                            <div key={day} className={`day-box ${now.getDay() === i ? 'active-day' : ''}`}>
+                                <span>{day}</span>
+                                <span style={{fontWeight: 'bold', marginTop: '4px'}}>{now.getDate() - (now.getDay() - i)}</span>
                             </div>
                         ))}
                     </div>
 
-                    <footer style={{ textAlign: 'center', color: '#444', fontSize: '10px', letterSpacing: '3px' }}>
-                        BY HADI HARFOUSH | ELITE EDITION
+                    {/* Clock & Quote */}
+                    <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                        <div className="eng-clock">{formatClock(now)}</div>
+                        <p style={{ color: '#888', fontSize: '13px', marginTop: '10px', fontStyle: 'italic' }}>
+                            "العمق ليس في الكلمات، بل في الأثر الذي تتركه."
+                        </p>
+                    </div>
+
+                    {/* Timer Section */}
+                    <div className="glass-card" style={{ padding: '25px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--gold)', letterSpacing: '2px', marginBottom: '10px' }}>DEEP FOCUS MODE</div>
+                        <div style={{ fontSize: '38px', fontWeight: '200', marginBottom: '20px' }}>
+                            {Math.floor(timeLeft/60)}:{String(timeLeft%60).padStart(2,'0')}
+                        </div>
+                        <button className="btn-gold-outline" onClick={() => { playClick(); setIsTimerOn(!isTimerOn); }}>
+                            {isTimerOn ? "PAUSE SESSION" : "START IMMERSION"}
+                        </button>
+                    </div>
+
+                    {/* Tasks Sections */}
+                    {ROUTINE_DATA.map(group => (
+                        <div key={group.title} style={{ marginBottom: '30px' }}>
+                            <h3 style={{ fontSize: '14px', color: '#666', marginBottom: '15px', marginRight: '5px' }}>{group.title}</h3>
+                            <div className="glass-card">
+                                {group.tasks.map(task => (
+                                    <div key={task.id} className="task-row" onClick={() => toggle(task.id)} style={{ opacity: checked[task.id] ? 0.4 : 1 }}>
+                                        <div className="check-gold" style={{ background: checked[task.id] ? 'var(--gold)' : 'transparent' }}>
+                                            {checked[task.id] && <span style={{ color: '#000', fontSize: '12px' }}>✓</span>}
+                                        </div>
+                                        <span style={{ fontSize: '20px' }}>{task.icon}</span>
+                                        <span style={{ fontSize: '15px', flex: 1, textDecoration: checked[task.id] ? 'line-through' : 'none' }}>{task.label}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+
+                    <footer style={{ textAlign: 'center', color: '#333', fontSize: '10px', letterSpacing: '4px', marginTop: '40px' }}>
+                        HADI HARFOUSH • ELITE SYSTEM V5
                     </footer>
                 </div>
             );
