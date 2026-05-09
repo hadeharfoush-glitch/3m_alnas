@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>HADI OS v16</title>
+<title>HADI OS v18</title>
 
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -24,22 +24,20 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
 }
 
-/* layout */
 .container{
   max-width:520px;
   margin:auto;
   padding:18px;
 }
 
-/* HERO DASHBOARD */
+/* HERO */
 .hero{
   background:linear-gradient(145deg,rgba(212,175,55,0.08),rgba(255,255,255,0.02));
   border:1px solid var(--soft);
-  border-radius:24px;
-  padding:20px;
-  margin-bottom:15px;
+  border-radius:22px;
+  padding:18px;
   text-align:center;
-  backdrop-filter: blur(10px);
+  margin-bottom:12px;
 }
 
 .level{
@@ -48,7 +46,7 @@ body{
   font-weight:200;
 }
 
-.sub{
+.small{
   font-size:12px;
   opacity:0.7;
 }
@@ -58,7 +56,7 @@ body{
   height:8px;
   background:#111;
   border-radius:20px;
-  margin-top:12px;
+  margin-top:10px;
   overflow:hidden;
 }
 
@@ -68,21 +66,16 @@ body{
   transition:0.3s;
 }
 
-/* cards */
+/* CARD */
 .card{
   background:var(--glass);
   border:1px solid var(--soft);
   border-radius:18px;
-  padding:16px;
-  margin-bottom:12px;
-  transition:0.2s;
+  padding:14px;
+  margin-bottom:10px;
 }
 
-.card:active{
-  transform:scale(0.98);
-}
-
-/* task */
+/* TASK */
 .task{
   display:flex;
   justify-content:space-between;
@@ -91,10 +84,9 @@ body{
   cursor:pointer;
 }
 
-/* check */
+/* CHECK */
 .check{
-  width:18px;
-  height:18px;
+  width:18px;height:18px;
   border:1px solid var(--gold);
   border-radius:5px;
   display:flex;
@@ -102,19 +94,11 @@ body{
   justify-content:center;
 }
 
-/* stats row */
-.row{
-  display:flex;
-  justify-content:space-between;
+/* warning */
+.warn{
+  color:#ff4d4d;
   font-size:12px;
-  opacity:0.8;
-}
-
-/* streak badge */
-.streak{
   text-align:center;
-  color:var(--gold);
-  font-size:12px;
   margin-top:8px;
 }
 </style>
@@ -127,84 +111,107 @@ body{
 
 const {useState,useEffect,useMemo} = React;
 
-const clickSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-interface-click-1126.mp3");
-clickSound.volume = 0.3;
+const click = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-interface-click-1126.mp3");
+click.volume = 0.3;
 
 const TASKS=[
-  {id:"1",t:"تمارين جسم"},
-  {id:"2",t:"دراسة"},
-  {id:"3",t:"إنجليزي"},
-  {id:"4",t:"شغل / مهارة"},
-  {id:"5",t:"قراءة / تطوير"}
+ {id:"1",t:"تمارين"},
+ {id:"2",t:"دراسة"},
+ {id:"3",t:"إنجليزي"},
+ {id:"4",t:"مهارة"},
+ {id:"5",t:"قراءة"}
 ];
 
 function App(){
 
 const [done,setDone]=useState(()=>{
-  return JSON.parse(localStorage.getItem("done")||"{}");
+ return JSON.parse(localStorage.getItem("done")||"{}");
 });
 
-const [xp,setXp]=useState(Number(localStorage.getItem("xp")||0));
+const [xp,setXp]=useState(Number(localStorage.getItem("xp")||50));
 const [streak,setStreak]=useState(Number(localStorage.getItem("streak")||0));
+const [last,setLast]=useState(localStorage.getItem("last")||"");
 
 const today=new Date().toDateString();
 
-/* daily reset */
+/* 🔥 REAL SYSTEM ENGINE */
 useEffect(()=>{
-  const last=localStorage.getItem("last");
-  if(last!==today){
-    setDone({});
+
+// إذا يوم جديد وما اشتغلت → عقوبة بسيطة
+if(last && last!==today){
+  const completed=Object.values(done).filter(Boolean).length;
+
+  if(completed===0){
+    setXp(x=>Math.max(0,x-20)); // lose XP
+    setStreak(0); // reset streak
+  }else{
     setStreak(s=>s+1);
-    localStorage.setItem("last",today);
   }
+
+  setDone({});
+}
+
+localStorage.setItem("last",today);
+
 },[]);
 
 useEffect(()=>{
-  localStorage.setItem("done",JSON.stringify(done));
-  localStorage.setItem("xp",xp);
-  localStorage.setItem("streak",streak);
+localStorage.setItem("done",JSON.stringify(done));
+localStorage.setItem("xp",xp);
+localStorage.setItem("streak",streak);
 },[done,xp,streak]);
 
+/* LEVEL SYSTEM */
 const level=Math.floor(xp/120)+1;
 const progress=xp%120;
 
+/* LOGIC IMPACT */
 const toggle=(id)=>{
 
-clickSound.play().catch(()=>{});
+click.play().catch(()=>{});
 
 if(navigator.vibrate) navigator.vibrate(40);
 
 setDone(prev=>{
-  const isNew=!prev[id];
+const newState={...prev,[id]:!prev[id]};
 
-  if(isNew) setXp(x=>x+25);
-  else setXp(x=>Math.max(0,x-25));
+const completed=Object.values(newState).filter(Boolean).length;
 
-  return {...prev,[id]:!prev[id]};
+/* 🎯 REWARD SYSTEM */
+if(!prev[id]){
+  setXp(x=>x+20);
+
+  // bonus if consistency
+  if(completed===TASKS.length){
+    setXp(x=>x+30);
+  }
+}else{
+  setXp(x=>Math.max(0,x-15)); // penalty if uncheck
+}
+
+return newState;
 });
 
 };
 
 const completed=Object.values(done).filter(Boolean).length;
 
+/* SYSTEM STATUS */
+const warning = completed===0 ? "⚠️ ما عم تعمل شي اليوم → النظام عم يخسرك نقاط" : "";
+
 return(
 <div className="container">
 
 {/* HERO */}
 <div className="hero">
-  <div className="level">LEVEL {level}</div>
-  <div className="sub">BEAST MODE SYSTEM</div>
 
-  <div className="bar">
-    <div className="fill" style={{width:progress+"%"}}></div>
-  </div>
+<div className="level">LEVEL {level}</div>
+<div className="small">XP: {xp} • 🔥 Streak: {streak}</div>
 
-  <div className="row" style={{marginTop:10}}>
-    <span>XP: {xp}</span>
-    <span>{completed}/{TASKS.length}</span>
-  </div>
+<div className="bar">
+<div className="fill" style={{width:progress+"%"}}></div>
+</div>
 
-  <div className="streak">🔥 Streak: {streak} days</div>
 </div>
 
 {/* TASKS */}
@@ -227,10 +234,12 @@ style={{opacity:done[t.id]?0.4:1}}>
 ))}
 </div>
 
-{/* QUOTE */}
-<div className="card" style={{textAlign:"center",color:"#D4AF37"}}>
-"Discipline is the real luxury."
+{/* SYSTEM FEEDBACK */}
+<div className="card" style={{textAlign:"center"}}>
+{completed}/{TASKS.length} مهام اليوم
 </div>
+
+{warning && <div className="warn">{warning}</div>}
 
 </div>
 );
