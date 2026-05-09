@@ -2,127 +2,55 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hadi | Absolute System V11</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hadi | Mastery System</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@200;400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #D4AF37; --bg: #000; --glass: rgba(255, 255, 255, 0.03); }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Alexandria', sans-serif; background-image: radial-gradient(circle at top right, #1a1608 0%, #000 70%); overflow-x: hidden; }
-        .main-container { padding: 30px 20px; maxWidth: 480px; margin: 0 auto; }
-        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 22px; margin-bottom: 20px; padding: 20px; }
-        .clock-v11 { font-size: 55px; font-weight: 200; text-align: center; color: var(--gold); margin: 25px 0; letter-spacing: -2px; }
-        .day-column { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .score-indicator { font-size: 10px; color: var(--gold); font-weight: bold; }
-        .day-circle { width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 11px; }
-        .active-day .day-circle { border-color: var(--gold); background: rgba(212, 175, 55, 0.1); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
-        .period-label { font-size: 10px; color: var(--gold); letter-spacing: 2px; margin-bottom: 15px; display: block; opacity: 0.7; }
-        .task-row { padding: 14px 0; display: flex; align-items: center; gap: 15px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.02); transition: 0.2s; }
-        .check-v11 { width: 18px; height: 18px; border: 1.2px solid var(--gold); border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+        :root { --gold: #D4AF37; --bg: #000; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Alexandria', sans-serif; }
+        .main-container { padding: 30px 20px; max-width: 480px; margin: 0 auto; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+        .streak-val { font-size: 32px; font-weight: 700; color: var(--gold); }
+        .copy-pill { font-size: 13px; color: #ccc; border-right: 2px solid var(--gold); padding-right: 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
-
-        const INTEL_VAULT = [
-            { type: "English Word", value: "Aesthetic (جمالي) - Perfect for your brand style." },
-            { type: "Copywriting", value: "Don't sell the plane, sell the destination." },
-            { type: "English Word", value: "Resilient (مرن) - Essential for a pro freelancer." },
-            { type: "Strategy", value: "Manager Mode needs 4-3-3 Holding for balance." }
-        ];
-
-        const SCHEDULE = {
-            "الفترة الصباحية": [
-                { id: "m1", label: "استيقاظ مبكر + ورد ديني", i: "☀️" },
-                { id: "m2", label: "تمارين رياضية صباحية", i: "🏃‍♂️" },
-                { id: "m3", label: "قراءة 20 صفحة (تطوير)", i: "📖" }
-            ],
-            "فترة الانتاج": [
-                { id: "p1", label: "منهاج الحادي عشر (تركيز)", i: "📚" },
-                { id: "p2", label: "كورس الكوبي رايتينج", i: "✒️" },
-                { id: "p3", label: "تطوير اللغة الإنجليزية", i: "🌐" }
-            ],
-            "فترة المساء": [
-                { id: "e1", label: "تكتيكات FC Mobile (Target 122)", i: "⚽" },
-                { id: "e2", label: "تجهيز باقات مستقل/Upwork", i: "🎯" },
-                { id: "e3", label: "تخطيط محتوى اليوتيوب", i: "🎬" }
-            ]
-        };
-
         function App() {
-            const [time, setTime] = useState(new Date());
-            const [checked, setChecked] = useState({});
-            const [scores, setScores] = useState([70, 85, 90, 0, 0, 0, 0]);
-
-            useEffect(() => {
-                const interval = setInterval(() => setTime(new Date()), 1000);
-                return () => clearInterval(interval);
-            }, []);
-
-            const playAudio = () => {
-                const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-50.mp3');
-                audio.volume = 0.5;
-                audio.play().catch(() => {});
-            };
-
-            const toggle = (id) => {
-                playAudio();
-                setChecked(prev => ({ ...prev, [id]: !prev[id] }));
-            };
-
-            const completionRate = useMemo(() => {
-                const total = Object.values(SCHEDULE).flat().length;
-                const done = Object.values(checked).filter(Boolean).length;
-                return Math.round((done / total) * 100);
-            }, [checked]);
-
-            const dailyIntel = INTEL_VAULT[time.getDate() % INTEL_VAULT.length];
+            const [streak, setStreak] = useState(12); // مثال للـ Streak الحالي
+            const [copyTip, setCopyTip] = useState("معادلة PAS: Problem (مشكلة) -> Agitation (تضخيم) -> Solution (حل).");
 
             return (
                 <div className="main-container">
-                    {/* Weekly Calendar with % */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-                        {["أحد", "إثن", "ثلاث", "أربع", "خميس", "جمعة", "سبت"].map((d, i) => (
-                            <div key={i} className={`day-column ${time.getDay() === i ? 'active-day' : ''}`}>
-                                <span className="score-indicator">{time.getDay() === i ? completionRate : scores[i]}%</span>
-                                <div className="day-circle">{d}</div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="clock-v11">{time.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}</div>
-
-                    {/* Smart Intel Card */}
-                    <div className="glass-card" style={{ borderRight: '4px solid var(--gold)' }}>
-                        <span className="period-label">{dailyIntel.type}</span>
-                        <div style={{ fontSize: '15px', color: '#eee', fontStyle: 'italic' }}>"{dailyIntel.value}"</div>
-                    </div>
-
-                    {/* Time-Based Sections */}
-                    {Object.entries(SCHEDULE).map(([period, tasks]) => (
-                        <div key={period} className="glass-card">
-                            <span className="period-label">{period}</span>
-                            {tasks.map(task => (
-                                <div key={task.id} className="task-row" onClick={() => toggle(task.id)} style={{ opacity: checked[task.id] ? 0.3 : 1 }}>
-                                    <div className="check-v11" style={{ background: checked[task.id] ? 'var(--gold)' : 'transparent' }}>
-                                        {checked[task.id] && <span style={{color: '#000', fontSize: '10px'}}>✓</span>}
-                                    </div>
-                                    <span style={{fontSize: '15px', flex: 1}}>{task.label}</span>
-                                    <span>{task.i}</span>
-                                </div>
-                            ))}
+                    {/* نظام الاستمرارية */}
+                    <div className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <div style={{ fontSize: '10px', color: '#888' }}>نظام الاستمرارية</div>
+                            <div className="streak-val">{streak} <span style={{fontSize: '16px', color: '#fff'}}>يوم انضباط</span></div>
                         </div>
-                    ))}
+                        <div style={{ width: '50px', height: '50px', borderRadius: '50%', border: '2px solid var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {Math.round((streak / 90) * 100)}%
+                        </div>
+                    </div>
 
-                    <footer style={{ textAlign: 'center', opacity: 0.1, fontSize: '9px', marginTop: '20px' }}>HADI HARFOUSH • CORE SYSTEM V11</footer>
+                    {/* قاموس الكوبي رايتينج */}
+                    <div className="glass-card">
+                        <div style={{ fontSize: '10px', color: var(--gold), letterSpacing: '2px' }}>نصيحة الكوبي رايتينج اليومية</div>
+                        <div className="copy-pill">{copyTip}</div>
+                    </div>
+
+                    {/* تذكير FC Mobile */}
+                    <div className="glass-card" style={{ border: 'none', background: 'linear-gradient(45deg, #1a1608, #000)' }}>
+                        <div style={{ fontSize: '10px', color: '#D4AF37' }}>تكتيك الـ 122 OVR</div>
+                        <div style={{ fontSize: '14px', marginTop: '5px' }}>جرب التشكيلة الدفاعية المتوازنة (4-3-3 Holding) لضمان السيطرة في نمط المدير الفني.</div>
+                    </div>
                 </div>
             );
         }
-
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
