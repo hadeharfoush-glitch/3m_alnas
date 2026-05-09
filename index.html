@@ -3,205 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hadi | Ultimate Elite System</title>
+    <title>Hadi | Elite Blueprint</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@200;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #D4AF37;
-            --gold-light: #F9E596;
             --bg: #000;
             --glass: rgba(255, 255, 255, 0.03);
             --ios-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Alexandria", sans-serif;
         }
-
         body {
             margin: 0; background: var(--bg); color: #fff;
             font-family: var(--ios-font); -webkit-font-smoothing: antialiased;
             background-image: radial-gradient(circle at top right, #1a1608 0%, #000 70%);
-            overflow-x: hidden; padding-bottom: 50px;
+            padding-bottom: 50px;
         }
-
-        .glass-panel {
-            background: var(--glass); backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(212, 175, 55, 0.1);
-            border-radius: 25px; transition: 0.4s ease;
+            border-radius: 22px; margin-bottom: 20px;
         }
-
-        .active-glow { box-shadow: 0 0 20px rgba(212, 175, 55, 0.15); border-color: var(--gold); }
-
-        .clock-vibe {
-            font-size: 55px; font-weight: 200; text-align: center;
-            background: linear-gradient(to bottom, #fff, var(--gold));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
+        .clock-v9 {
+            font-size: 60px; font-weight: 200; text-align: center;
+            color: var(--gold); margin: 30px 0 10px 0;
         }
-
-        .score-box {
-            background: linear-gradient(135deg, var(--gold), #AA771C);
-            color: #000; padding: 10px 20px; border-radius: 15px;
-            font-weight: 700; text-align: center; min-width: 80px;
+        .score-pill {
+            background: var(--gold); color: #000; padding: 5px 15px;
+            border-radius: 20px; font-weight: 700; font-size: 14px;
         }
-
-        .day-dot {
-            width: 35px; height: 35px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px; border: 1px solid rgba(255,255,255,0.1);
+        .day-box {
+            width: 40px; height: 50px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05); font-size: 11px;
         }
-
-        .day-dot.active { background: var(--gold); color: #000; border: none; }
-
-        .task-item {
+        .day-active { border-color: var(--gold); background: rgba(212, 175, 55, 0.15); color: var(--gold); }
+        .task-row {
             padding: 18px; display: flex; align-items: center; gap: 15px;
-            cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);
-            transition: transform 0.2s;
+            cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.02);
         }
-
-        .task-item:active { transform: scale(0.98); }
-
-        .check-circle {
+        .check-v9 {
             width: 22px; height: 22px; border: 1.5px solid var(--gold);
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
         }
-
-        .btn-action {
+        .btn-main {
             background: none; border: 1px solid var(--gold); color: var(--gold);
-            padding: 15px; border-radius: 18px; width: 100%; font-family: var(--ios-font);
-            font-weight: 700; cursor: pointer; transition: 0.3s;
+            padding: 15px; border-radius: 15px; width: 100%; font-weight: 700;
         }
-
-        .btn-action:hover { background: rgba(212, 175, 55, 0.1); }
     </style>
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const DAYS = ["أحد", "إثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"];
-        const ROUTINE = [
+        const TASKS = [
             { id: "h1", label: "الحفظ الديني والورد", i: "📖" },
-            { id: "h2", label: "تكتيكات FC Mobile (122 OVR)", i: "⚽" },
+            { id: "h2", label: "تطوير تشكيلة FC Mobile", i: "⚽" },
             { id: "h3", label: "دراسة ركائز الكوبي رايتينج", i: "✍️" },
-            { id: "h4", label: "تطوير مهارات مستقل (Freelance)", i: "🎯" },
-            { id: "h5", label: "مراجعة دروس الحادي عشر", i: "📚" },
-            { id: "h6", label: "تطوير اللغة الإنجليزية (Smart)", i: "🌐" }
+            { id: "h4", label: "باقات مستقل و Upwork", i: "🎯" },
+            { id: "h5", label: "منهج الحادي عشر (عربي/وطنية)", i: "📚" },
+            { id: "h6", label: "اللغة الإنجليزية (Smart Way)", i: "🌐" }
         ];
 
         function App() {
             const [time, setTime] = useState(new Date());
             const [score, setScore] = useState(0);
             const [checked, setChecked] = useState({});
-            const [timer, setTimer] = useState(2700);
             const [isTimerOn, setIsTimerOn] = useState(false);
-
-            // Audio triggered by user interaction
-            const playSound = (type) => {
-                const url = type === 'done' 
-                    ? 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'
-                    : 'https://www.soundjay.com/buttons/sounds/button-50.mp3';
-                const audio = new Audio(url);
-                audio.play().catch(() => {}); // Catch silent play blocks
-            };
+            const [timeLeft, setTimeLeft] = useState(2700);
 
             useEffect(() => {
                 const clock = setInterval(() => setTime(new Date()), 1000);
-                const savedScore = localStorage.getItem('hadi_score_v8');
-                if (savedScore) setScore(Number(savedScore));
+                const saved = JSON.parse(localStorage.getItem('hadi_v9') || '{}');
+                setScore(saved.score || 0);
+                setChecked(saved.tasks || {});
                 return () => clearInterval(clock);
             }, []);
 
-            useEffect(() => {
-                let interval;
-                if (isTimerOn && timer > 0) {
-                    interval = setInterval(() => setTimer(t => t - 1), 1000);
-                } else if (timer === 0) {
-                    playSound('done');
-                    setIsTimerOn(false);
-                    updateScore(100);
-                    setTimer(2700);
-                }
-                return () => clearInterval(interval);
-            }, [isTimerOn, timer]);
-
-            const updateScore = (val) => {
-                const newScore = score + val;
-                setScore(newScore);
-                localStorage.setItem('hadi_score_v8', newScore);
+            const playSound = (isDone) => {
+                const audio = new Audio(isDone ? 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3' : 'https://www.soundjay.com/buttons/sounds/button-50.mp3');
+                audio.play().catch(() => {});
             };
 
             const toggleTask = (id) => {
-                playSound('click');
+                playSound(false);
                 const newChecked = { ...checked, [id]: !checked[id] };
+                const newScore = newChecked[id] ? score + 25 : score - 25;
                 setChecked(newChecked);
-                if (newChecked[id]) updateScore(20);
+                setScore(newScore);
+                localStorage.setItem('hadi_v9', JSON.stringify({ score: newScore, tasks: newChecked }));
             };
 
             return (
                 <div style={{ padding: '30px 20px', maxWidth: '480px', margin: '0 auto' }}>
                     
-                    {/* Header: Score & Clock */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                        <div className="score-box">
-                            <div style={{fontSize: '9px'}}>إجمالي الـ XP</div>
-                            <div>{score}</div>
-                        </div>
-                        <div style={{ textAlign: 'left' }}>
-                            <div style={{fontSize: '11px', color: '#666'}}>{time.toLocaleDateString('ar-SY', {month: 'long', day: 'numeric'})}</div>
-                        </div>
+                    {/* Top Bar */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <div className="score-pill">XP: {score}</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>{time.toLocaleDateString('ar-SY')}</div>
                     </div>
 
-                    <div className="clock-vibe">
+                    {/* English Clock */}
+                    <div className="clock-v9">
                         {time.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
                     </div>
 
-                    {/* الروزنامة الأسبوعية */}
-                    <div className="glass-panel" style={{ padding: '15px', marginBottom: '30px', display: 'flex', justifyContent: 'space-between' }}>
-                        {DAYS.map((day, i) => (
-                            <div key={i} className={`day-dot ${time.getDay() === i ? 'active' : ''}`}>
-                                {day.charAt(0)}
+                    {/* 7-Day Calendar */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
+                        {["أحد", "إثن", "ثلاث", "أربع", "خميس", "جمعة", "سبت"].map((d, i) => (
+                            <div key={i} className={`day-box ${time.getDay() === i ? 'day-active' : ''}`}>
+                                <span>{d}</span>
+                                <span style={{fontWeight: 'bold'}}>{time.getDate() - (time.getDay() - i)}</span>
                             </div>
                         ))}
                     </div>
 
-                    {/* معلومة اليوم */}
-                    <div className="glass-panel" style={{ padding: '20px', marginBottom: '30px', borderRight: '4px solid var(--gold)' }}>
-                        <div style={{fontSize: '10px', color: var(--gold), marginBottom: '5px'}}>حكمة المسار</div>
-                        <div style={{fontSize: '14px', fontStyle: 'italic', color: '#ccc'}}>
-                            "الانضباط هو الجسر بين الأهداف والإنجاز."
+                    {/* Daily Insight */}
+                    <div className="glass-card" style={{ padding: '20px', borderRight: '4px solid var(--gold)' }}>
+                        <div style={{fontSize: '10px', color: var(--gold), marginBottom: '5px'}}>تحفيز اليوم</div>
+                        <div style={{fontSize: '14px', fontStyle: 'italic'}}>
+                            "تعلقتُ بشمسٍ؛ كانت لغيري مطلعاً، ولي مغيباً."
                         </div>
                     </div>
 
-                    {/* مؤقت الانغماس العميق */}
-                    <div className={`glass-panel ${isTimerOn ? 'active-glow' : ''}`} style={{ padding: '30px', textAlign: 'center', marginBottom: '30px' }}>
-                        <div style={{fontSize: '11px', color: '#888', marginBottom: '10px'}}>جلسة التركيز العميق (45د)</div>
-                        <div style={{fontSize: '42px', fontWeight: '200', marginBottom: '20px'}}>
-                            {Math.floor(timer/60)}:{String(timer%60).padStart(2,'0')}
+                    {/* Focus Timer */}
+                    <div className="glass-card" style={{ padding: '30px', textAlign: 'center' }}>
+                        <div style={{fontSize: '10px', color: '#888', marginBottom: '10px'}}>جلسة التركيز العميق (45د)</div>
+                        <div style={{fontSize: '40px', fontWeight: '200', marginBottom: '20px'}}>
+                            {Math.floor(timeLeft/60)}:{String(timeLeft%60).padStart(2,'0')}
                         </div>
-                        <button className="btn-action" onClick={() => { playSound('click'); setIsTimerOn(!isTimerOn); }}>
+                        <button className="btn-main" onClick={() => setIsTimerOn(!isTimerOn)}>
                             {isTimerOn ? 'تعليق الجلسة' : 'بدء الانغماس'}
                         </button>
                     </div>
 
-                    {/* قائمة الروتين */}
-                    <div className="glass-panel" style={{ padding: '5px 0' }}>
-                        {ROUTINE.map(task => (
-                            <div key={task.id} className="task-item" onClick={() => toggleTask(task.id)} style={{ opacity: checked[task.id] ? 0.3 : 1 }}>
-                                <div className="check-circle" style={{ background: checked[task.id] ? 'var(--gold)' : 'transparent' }}>
-                                    {checked[task.id] && <span style={{color: '#000', fontSize: '12px'}}>✓</span>}
+                    {/* Tasks Section */}
+                    <div className="glass-card" style={{ padding: '5px 0' }}>
+                        {TASKS.map(t => (
+                            <div key={t.id} className="task-row" onClick={() => toggleTask(t.id)} style={{ opacity: checked[t.id] ? 0.3 : 1 }}>
+                                <div className="check-v9" style={{ background: checked[t.id] ? 'var(--gold)' : 'transparent' }}>
+                                    {checked[t.id] && <span style={{color: '#000', fontSize: '10px'}}>✓</span>}
                                 </div>
-                                <span style={{fontSize: '20px'}}>{task.icon || task.i}</span>
-                                <span style={{fontSize: '15px', flex: 1, textDecoration: checked[task.id] ? 'line-through' : 'none'}}>{task.label}</span>
+                                <span style={{fontSize: '20px'}}>{t.i}</span>
+                                <span style={{fontSize: '15px', flex: 1, textDecoration: checked[t.id] ? 'line-through' : 'none'}}>{t.label}</span>
                             </div>
                         ))}
                     </div>
 
-                    <footer style={{ textAlign: 'center', marginTop: '40px', color: '#333', fontSize: '10px', letterSpacing: '4px' }}>
-                        HADI HARFOUSH • ELITE SYSTEM V8
+                    <footer style={{ textAlign: 'center', color: '#333', fontSize: '10px', letterSpacing: '4px', marginTop: '30px' }}>
+                        HADI HARFOUSH • ELITE V9
                     </footer>
                 </div>
             );
