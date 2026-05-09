@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>HADI OS v14</title>
+<title>HADI OS v15</title>
 
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -13,140 +13,95 @@
 :root{
   --gold:#D4AF37;
   --bg:#000;
-  --glass:rgba(255,255,255,0.04);
   --soft:rgba(212,175,55,0.15);
+  --glass:rgba(255,255,255,0.04);
 }
 
-/* iOS SYSTEM FONT (خفيف + متوافق شاومي) */
 body{
   margin:0;
   background:var(--bg);
   color:#fff;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-  overflow-x:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
 }
 
-/* container */
 .container{
   max-width:520px;
   margin:auto;
   padding:18px;
 }
 
-/* glass (خفيف للموبايل الضعيف) */
+/* XP BAR */
+.xpBar{
+  height:8px;
+  background:#111;
+  border-radius:20px;
+  overflow:hidden;
+  margin:10px 0 20px;
+}
+
+.xpFill{
+  height:100%;
+  background:var(--gold);
+  transition:0.3s;
+}
+
+/* cards */
 .card{
   background:var(--glass);
   border:1px solid var(--soft);
-  border-radius:20px;
+  border-radius:18px;
   padding:16px;
-  margin-bottom:14px;
-
-  /* IMPORTANT: خففنا blur لتفادي تهنيج شاومي */
+  margin-bottom:12px;
   backdrop-filter: blur(10px);
-
-  box-shadow:0 6px 25px rgba(0,0,0,0.6);
-
-  /* animation خفيف */
-  transition:transform .2s ease, opacity .2s ease;
+  transition:0.2s;
 }
 
-/* click feel */
 .card:active{
   transform:scale(0.98);
 }
 
-/* clock */
-.clock{
-  font-size:50px;
-  text-align:center;
-  color:var(--gold);
-  font-weight:200;
-  margin:18px 0;
-  letter-spacing:-1px;
-}
-
-/* days */
-.days{
+/* header stats */
+.stats{
   display:flex;
   justify-content:space-between;
-  margin-bottom:18px;
-}
-
-.day{
-  text-align:center;
-  font-size:10px;
-  opacity:0.7;
-}
-
-.circle{
-  width:34px;
-  height:34px;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,0.2);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  margin-top:5px;
-  transition:.2s;
-}
-
-.active .circle{
-  border-color:var(--gold);
-  background:rgba(212,175,55,0.12);
+  margin-bottom:10px;
+  font-size:12px;
+  opacity:0.8;
 }
 
 /* task */
 .task{
   display:flex;
-  align-items:center;
   justify-content:space-between;
   padding:12px 0;
   border-bottom:1px solid rgba(255,255,255,0.05);
   cursor:pointer;
-  transition:.2s;
-}
-
-.task:active{
-  transform:scale(0.98);
 }
 
 /* check */
 .check{
-  width:18px;
-  height:18px;
+  width:18px;height:18px;
   border:1px solid var(--gold);
   border-radius:5px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:12px;
 }
 
-/* title */
-.period{
-  font-size:10px;
+/* level badge */
+.level{
+  text-align:center;
   color:var(--gold);
-  letter-spacing:2px;
-  margin-bottom:10px;
-  opacity:0.8;
+  font-size:20px;
+  margin:10px 0;
 }
 
-/* glow text */
-.glow{
+/* streak */
+.streak{
   text-align:center;
   font-size:12px;
-  color:var(--gold);
-  opacity:0.7;
-}
-
-/* subtle fade in */
-.fade{
-  animation:fadeIn .4s ease;
-}
-
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(5px);}
-  to{opacity:1; transform:translateY(0);}
+  opacity:0.8;
+  margin-bottom:10px;
 }
 </style>
 </head>
@@ -158,108 +113,124 @@ body{
 
 const {useState,useEffect,useMemo} = React;
 
-/* 🔊 lightweight sound (works on Xiaomi) */
 const clickSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-interface-click-1126.mp3");
-clickSound.volume = 0.35;
+clickSound.volume = 0.3;
 
-/* schedule */
-const SCHEDULE={
-  "الصباح":[
-    {id:"m1",t:"استيقاظ + ترتيب يومك"},
-    {id:"m2",t:"تمارين خفيفة"},
-    {id:"m3",t:"قراءة 15 دقيقة"}
-  ],
-  "التركيز":[
-    {id:"p1",t:"دراسة"},
-    {id:"p2",t:"إنجليزي"},
-    {id:"p3",t:"مهارة عمل"}
-  ],
-  "المساء":[
-    {id:"e1",t:"نادي / حركة"},
-    {id:"e2",t:"شغل أو تعلم"},
-    {id:"e3",t:"تخطيط بكرا"}
-  ]
-};
+const TASKS = [
+  {id:"t1",text:"تمارين"},
+  {id:"t2",text:"دراسة"},
+  {id:"t3",text:"إنجليزي"},
+  {id:"t4",text:"شغل / تطوير"},
+  {id:"t5",text:"قراءة"}
+];
 
 function App(){
 
-const [time,setTime]=useState(new Date());
 const [done,setDone]=useState(()=>{
   return JSON.parse(localStorage.getItem("done")||"{}");
 });
 
+const [xp,setXp]=useState(()=>{
+  return Number(localStorage.getItem("xp")||0);
+});
+
+const [streak,setStreak]=useState(()=>{
+  return Number(localStorage.getItem("streak")||0);
+});
+
+const todayKey=new Date().toDateString();
+
+/* reset daily tasks */
 useEffect(()=>{
-  const i=setInterval(()=>setTime(new Date()),1000);
-  return ()=>clearInterval(i);
+  const last=localStorage.getItem("lastDay");
+
+  if(last!==todayKey){
+    setDone({});
+    setStreak(s=>s+1);
+    localStorage.setItem("lastDay",todayKey);
+  }
 },[]);
 
+/* save */
 useEffect(()=>{
   localStorage.setItem("done",JSON.stringify(done));
-},[done]);
+  localStorage.setItem("xp",xp);
+  localStorage.setItem("streak",streak);
+},[done,xp,streak]);
+
+/* level system */
+const level=Math.floor(xp/100)+1;
+const progress=xp%100;
 
 const toggle=(id)=>{
-  try{ clickSound.play(); }catch(e){}
-  setDone(p=>({...p,[id]:!p[id]}));
+
+clickSound.play().catch(()=>{});
+
+/* haptic feedback (Xiaomi compatible) */
+if(navigator.vibrate) navigator.vibrate(40);
+
+setDone(prev=>{
+  const newState={...prev,[id]:!prev[id]};
+
+  if(!prev[id]){
+    setXp(x=>x+20); // reward XP
+  }else{
+    setXp(x=>Math.max(0,x-20));
+  }
+
+  return newState;
+});
+
 };
 
-const progress=useMemo(()=>{
-  const all=Object.values(SCHEDULE).flat().length;
-  const ok=Object.values(done).filter(Boolean).length;
-  return Math.round((ok/all)*100);
-},[done]);
-
-const days=["أحد","إثن","ثلاث","أربع","خميس","جمعة","سبت"];
+const completed=Object.values(done).filter(Boolean).length;
 
 return(
-<div className="container fade">
+<div className="container">
 
-{/* days */}
-<div className="days">
-{days.map((d,i)=>(
-<div key={i} className={`day ${time.getDay()===i?'active':''}`}>
-{time.getDay()===i && <div style={{color:"#D4AF37"}}>{progress}%</div>}
-<div className="circle">{d}</div>
-</div>
-))}
-</div>
-
-{/* clock */}
-<div className="clock">
-{time.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}
-</div>
-
-<div className="glow">HADI SYSTEM • FOCUS MODE</div>
-
-{/* progress */}
+{/* LEVEL */}
 <div className="card">
-التقدم اليوم: {progress}%
+<div className="level">LEVEL {level}</div>
+
+<div className="streak">
+🔥 Streak: {streak} days
+</div>
+
+<div className="stats">
+<span>XP: {xp}</span>
+<span>{completed}/{TASKS.length}</span>
+</div>
+
+<div className="xpBar">
+<div className="xpFill" style={{width:progress+"%"}}></div>
+</div>
+
 </div>
 
 {/* tasks */}
-{Object.entries(SCHEDULE).map(([p,arr])=>(
-<div className="card" key={p}>
-
-<div className="period">{p}</div>
-
-{arr.map(x=>(
-<div key={x.id}
+<div className="card">
+{TASKS.map(t=>(
+<div key={t.id}
 className="task"
-onClick={()=>toggle(x.id)}
-style={{opacity:done[x.id]?0.4:1}}>
+onClick={()=>toggle(t.id)}
+style={{opacity:done[t.id]?0.4:1}}>
 
 <div className="check">
-{done[x.id] && "✓"}
+{done[t.id] && "✓"}
 </div>
 
 <div style={{flex:1,marginRight:10}}>
-{x.t}
+{t.text}
 </div>
 
 </div>
 ))}
-
 </div>
-))}
+
+{/* motivation */}
+<div className="card" style={{textAlign:"center",color:"#D4AF37"}}>
+"كل مهمة = نسخة أقوى منك"
+</div>
 
 </div>
 );
