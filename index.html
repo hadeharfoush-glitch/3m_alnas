@@ -1,252 +1,263 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>HADI OS v18</title>
+import { useState, useEffect } from "react";
 
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-<style>
-:root{
-  --gold:#D4AF37;
-  --bg:#000;
-  --soft:rgba(212,175,55,0.12);
-  --glass:rgba(255,255,255,0.03);
-}
-
-body{
-  margin:0;
-  background:var(--bg);
-  color:#fff;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
-}
-
-.container{
-  max-width:520px;
-  margin:auto;
-  padding:18px;
-}
-
-/* HERO */
-.hero{
-  background:linear-gradient(145deg,rgba(212,175,55,0.08),rgba(255,255,255,0.02));
-  border:1px solid var(--soft);
-  border-radius:22px;
-  padding:18px;
-  text-align:center;
-  margin-bottom:12px;
-}
-
-.level{
-  font-size:26px;
-  color:var(--gold);
-  font-weight:200;
-}
-
-.small{
-  font-size:12px;
-  opacity:0.7;
-}
-
-/* XP BAR */
-.bar{
-  height:8px;
-  background:#111;
-  border-radius:20px;
-  margin-top:10px;
-  overflow:hidden;
-}
-
-.fill{
-  height:100%;
-  background:var(--gold);
-  transition:0.3s;
-}
-
-/* CARD */
-.card{
-  background:var(--glass);
-  border:1px solid var(--soft);
-  border-radius:18px;
-  padding:14px;
-  margin-bottom:10px;
-}
-
-/* TASK */
-.task{
-  display:flex;
-  justify-content:space-between;
-  padding:12px 0;
-  border-bottom:1px solid rgba(255,255,255,0.05);
-  cursor:pointer;
-}
-
-/* CHECK */
-.check{
-  width:18px;height:18px;
-  border:1px solid var(--gold);
-  border-radius:5px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-/* warning */
-.warn{
-  color:#ff4d4d;
-  font-size:12px;
-  text-align:center;
-  margin-top:8px;
-}
-</style>
-</head>
-
-<body>
-<div id="root"></div>
-
-<script type="text/babel">
-
-const {useState,useEffect,useMemo} = React;
-
-const click = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-interface-click-1126.mp3");
-click.volume = 0.3;
-
-const TASKS=[
- {id:"1",t:"تمارين"},
- {id:"2",t:"دراسة"},
- {id:"3",t:"إنجليزي"},
- {id:"4",t:"مهارة"},
- {id:"5",t:"قراءة"}
+const TASKS = [
+  { id: "1", t: "تمارين", icon: "⚽" },
+  { id: "2", t: "دراسة", icon: "📚" },
+  { id: "3", t: "إنجليزي", icon: "🌐" },
+  { id: "4", t: "مهارة", icon: "🛠️" },
+  { id: "5", t: "قراءة", icon: "📖" },
 ];
 
-function App(){
+const LEVEL_TITLES = [
+  "مبتدئ", "مثابر", "منضبط", "محترف", "أسطورة"
+];
 
-const [done,setDone]=useState(()=>{
- return JSON.parse(localStorage.getItem("done")||"{}");
-});
+export default function HadiOS() {
+  const [done, setDone] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("hadi-done") || "{}"); }
+    catch { return {}; }
+  });
+  const [xp, setXp] = useState(() => Number(localStorage.getItem("hadi-xp") || 0));
+  const [streak, setStreak] = useState(() => Number(localStorage.getItem("hadi-streak") || 0));
+  const [last, setLast] = useState(() => localStorage.getItem("hadi-last") || "");
+  const [flash, setFlash] = useState(null); // "+20 XP" popup feedback
+  const [allDoneAnim, setAllDoneAnim] = useState(false);
 
-const [xp,setXp]=useState(Number(localStorage.getItem("xp")||50));
-const [streak,setStreak]=useState(Number(localStorage.getItem("streak")||0));
-const [last,setLast]=useState(localStorage.getItem("last")||"");
+  const today = new Date().toDateString();
 
-const today=new Date().toDateString();
+  // ─── Day-change engine ───────────────────────────────────────────────
+  useEffect(() => {
+    if (last && last !== today) {
+      const completedYesterday = Object.values(done).filter(Boolean).length;
+      if (completedYesterday === 0) {
+        setXp(x => Math.max(0, x - 20));
+        setStreak(0);
+      } else if (completedYesterday === TASKS.length) {
+        setStreak(s => s + 1);
+      }
+      setDone({});
+    }
+    localStorage.setItem("hadi-last", today);
+  }, []);
 
-/* 🔥 REAL SYSTEM ENGINE */
-useEffect(()=>{
+  // ─── Persist state ───────────────────────────────────────────────────
+  useEffect(() => {
+    localStorage.setItem("hadi-done", JSON.stringify(done));
+    localStorage.setItem("hadi-xp", xp);
+    localStorage.setItem("hadi-streak", streak);
+  }, [done, xp, streak]);
 
-// إذا يوم جديد وما اشتغلت → عقوبة بسيطة
-if(last && last!==today){
-  const completed=Object.values(done).filter(Boolean).length;
+  // ─── Level calculation ───────────────────────────────────────────────
+  const XP_PER_LEVEL = 120;
+  const level = Math.floor(xp / XP_PER_LEVEL) + 1;
+  const progress = xp % XP_PER_LEVEL;
+  const levelTitle = LEVEL_TITLES[Math.min(level - 1, LEVEL_TITLES.length - 1)];
 
-  if(completed===0){
-    setXp(x=>Math.max(0,x-20)); // lose XP
-    setStreak(0); // reset streak
-  }else{
-    setStreak(s=>s+1);
-  }
+  // ─── Toggle task ─────────────────────────────────────────────────────
+  const toggle = (id) => {
+    if (navigator.vibrate) navigator.vibrate(40);
 
-  setDone({});
+    setDone(prev => {
+      const next = { ...prev, [id]: !prev[id] };
+      const nowCompleted = Object.values(next).filter(Boolean).length;
+
+      if (!prev[id]) {
+        // Checking a task: +20 XP, +30 bonus if all done
+        const bonus = nowCompleted === TASKS.length ? 30 : 0;
+        setXp(x => x + 20 + bonus);
+        setFlash(bonus > 0 ? "+50 XP 🎉" : "+20 XP");
+        if (nowCompleted === TASKS.length) setAllDoneAnim(true);
+      } else {
+        // Unchecking: -15 XP penalty
+        setXp(x => Math.max(0, x - 15));
+        setFlash("-15 XP");
+        setAllDoneAnim(false);
+      }
+
+      setTimeout(() => setFlash(null), 1200);
+      return next;
+    });
+  };
+
+  const completed = Object.values(done).filter(Boolean).length;
+  const allDone = completed === TASKS.length;
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "#000",
+      color: "#fff",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial",
+      direction: "rtl",
+      padding: "0",
+      position: "relative",
+    }}>
+      {/* XP Flash popup */}
+      {flash && (
+        <div style={{
+          position: "fixed",
+          top: 80,
+          left: "50%",
+          transform: "translateX(-50%)",
+          background: flash.startsWith("+") ? "rgba(212,175,55,0.95)" : "rgba(255,60,60,0.9)",
+          color: "#000",
+          fontWeight: 700,
+          fontSize: 16,
+          padding: "8px 20px",
+          borderRadius: 30,
+          zIndex: 100,
+          pointerEvents: "none",
+          animation: "fadeUp 1.2s ease forwards",
+        }}>
+          {flash}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeUp {
+          0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+          100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+        }
+        @keyframes pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0.4); }
+          50% { box-shadow: 0 0 0 12px rgba(212,175,55,0); }
+        }
+        @keyframes shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+      `}</style>
+
+      <div style={{ maxWidth: 520, margin: "0 auto", padding: "20px 16px" }}>
+
+        {/* ── HERO CARD ── */}
+        <div style={{
+          background: "linear-gradient(145deg, rgba(212,175,55,0.1), rgba(255,255,255,0.02))",
+          border: "1px solid rgba(212,175,55,0.25)",
+          borderRadius: 22,
+          padding: "20px 22px",
+          marginBottom: 14,
+          animation: allDoneAnim ? "pulse 2s ease infinite" : "none",
+        }}>
+          {/* Level + title */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <div style={{ fontSize: 28, color: "#D4AF37", fontWeight: 200, letterSpacing: 1 }}>
+                LEVEL {level}
+              </div>
+              <div style={{ fontSize: 13, color: "#D4AF37", opacity: 0.7 }}>{levelTitle}</div>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 24 }}>🔥</div>
+              <div style={{ fontSize: 12, opacity: 0.6 }}>{streak} يوم</div>
+            </div>
+          </div>
+
+          {/* XP numbers */}
+          <div style={{ display: "flex", justifyContent: "space-between", margin: "12px 0 6px", fontSize: 12, opacity: 0.6 }}>
+            <span>XP: {xp}</span>
+            <span>{progress} / {XP_PER_LEVEL} للمستوى التالي</span>
+          </div>
+
+          {/* Progress bar */}
+          <div style={{ height: 8, background: "#111", borderRadius: 20, overflow: "hidden" }}>
+            <div style={{
+              height: "100%",
+              width: `${(progress / XP_PER_LEVEL) * 100}%`,
+              background: allDone
+                ? "linear-gradient(90deg, #D4AF37, #fff8a0, #D4AF37)"
+                : "#D4AF37",
+              backgroundSize: "200% auto",
+              animation: allDone ? "shimmer 2s linear infinite" : "none",
+              borderRadius: 20,
+              transition: "width 0.4s ease",
+            }} />
+          </div>
+        </div>
+
+        {/* ── TASKS ── */}
+        <div style={{
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid rgba(212,175,55,0.12)",
+          borderRadius: 18,
+          padding: "6px 14px",
+          marginBottom: 12,
+        }}>
+          {TASKS.map((task, i) => (
+            <div
+              key={task.id}
+              onClick={() => toggle(task.id)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "13px 0",
+                borderBottom: i < TASKS.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
+                cursor: "pointer",
+                opacity: done[task.id] ? 0.4 : 1,
+                transition: "opacity 0.2s",
+              }}
+            >
+              {/* Checkbox */}
+              <div style={{
+                width: 20, height: 20,
+                border: done[task.id] ? "2px solid #D4AF37" : "1px solid rgba(212,175,55,0.5)",
+                borderRadius: 6,
+                background: done[task.id] ? "#D4AF37" : "transparent",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+                transition: "all 0.2s",
+              }}>
+                {done[task.id] && (
+                  <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+                    <path d="M1 4L4 7L10 1" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </div>
+
+              <span style={{ fontSize: 17 }}>{task.icon}</span>
+
+              <span style={{
+                flex: 1,
+                fontSize: 15,
+                textDecoration: done[task.id] ? "line-through" : "none",
+              }}>
+                {task.t}
+              </span>
+
+              <span style={{ fontSize: 11, color: "#D4AF37", opacity: 0.5 }}>+20</span>
+            </div>
+          ))}
+        </div>
+
+        {/* ── STATUS CARD ── */}
+        <div style={{
+          background: allDone ? "rgba(212,175,55,0.08)" : "rgba(255,255,255,0.03)",
+          border: `1px solid ${allDone ? "rgba(212,175,55,0.4)" : "rgba(212,175,55,0.12)"}`,
+          borderRadius: 16,
+          padding: "14px 18px",
+          textAlign: "center",
+          transition: "all 0.4s",
+        }}>
+          {allDone ? (
+            <>
+              <div style={{ fontSize: 22, marginBottom: 4 }}>✦</div>
+              <div style={{ color: "#D4AF37", fontSize: 15, fontWeight: 500 }}>أتممت يومك كاملاً — +30 XP مكافأة</div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: 13, opacity: 0.5, marginBottom: 4 }}>التقدم اليوم</div>
+              <div style={{ fontSize: 18, color: "#D4AF37" }}>{completed} / {TASKS.length}</div>
+              {completed === 0 && (
+                <div style={{ fontSize: 12, color: "#ff4d4d", marginTop: 6 }}>
+                  ⚠️ لو ما أتممت اليوم ستخسر 20 XP غداً
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
 }
-
-localStorage.setItem("last",today);
-
-},[]);
-
-useEffect(()=>{
-localStorage.setItem("done",JSON.stringify(done));
-localStorage.setItem("xp",xp);
-localStorage.setItem("streak",streak);
-},[done,xp,streak]);
-
-/* LEVEL SYSTEM */
-const level=Math.floor(xp/120)+1;
-const progress=xp%120;
-
-/* LOGIC IMPACT */
-const toggle=(id)=>{
-
-click.play().catch(()=>{});
-
-if(navigator.vibrate) navigator.vibrate(40);
-
-setDone(prev=>{
-const newState={...prev,[id]:!prev[id]};
-
-const completed=Object.values(newState).filter(Boolean).length;
-
-/* 🎯 REWARD SYSTEM */
-if(!prev[id]){
-  setXp(x=>x+20);
-
-  // bonus if consistency
-  if(completed===TASKS.length){
-    setXp(x=>x+30);
-  }
-}else{
-  setXp(x=>Math.max(0,x-15)); // penalty if uncheck
-}
-
-return newState;
-});
-
-};
-
-const completed=Object.values(done).filter(Boolean).length;
-
-/* SYSTEM STATUS */
-const warning = completed===0 ? "⚠️ ما عم تعمل شي اليوم → النظام عم يخسرك نقاط" : "";
-
-return(
-<div className="container">
-
-{/* HERO */}
-<div className="hero">
-
-<div className="level">LEVEL {level}</div>
-<div className="small">XP: {xp} • 🔥 Streak: {streak}</div>
-
-<div className="bar">
-<div className="fill" style={{width:progress+"%"}}></div>
-</div>
-
-</div>
-
-{/* TASKS */}
-<div className="card">
-{TASKS.map(t=>(
-<div key={t.id}
-className="task"
-onClick={()=>toggle(t.id)}
-style={{opacity:done[t.id]?0.4:1}}>
-
-<div className="check">
-{done[t.id] && "✓"}
-</div>
-
-<div style={{flex:1,marginRight:10}}>
-{t.t}
-</div>
-
-</div>
-))}
-</div>
-
-{/* SYSTEM FEEDBACK */}
-<div className="card" style={{textAlign:"center"}}>
-{completed}/{TASKS.length} مهام اليوم
-</div>
-
-{warning && <div className="warn">{warning}</div>}
-
-</div>
-);
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-
-</script>
-</body>
-</html>
