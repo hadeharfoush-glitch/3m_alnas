@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>HADI OS v15</title>
+<title>HADI OS v16</title>
 
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -13,8 +13,8 @@
 :root{
   --gold:#D4AF37;
   --bg:#000;
-  --soft:rgba(212,175,55,0.15);
-  --glass:rgba(255,255,255,0.04);
+  --soft:rgba(212,175,55,0.12);
+  --glass:rgba(255,255,255,0.03);
 }
 
 body{
@@ -24,22 +24,45 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
 }
 
+/* layout */
 .container{
   max-width:520px;
   margin:auto;
   padding:18px;
 }
 
+/* HERO DASHBOARD */
+.hero{
+  background:linear-gradient(145deg,rgba(212,175,55,0.08),rgba(255,255,255,0.02));
+  border:1px solid var(--soft);
+  border-radius:24px;
+  padding:20px;
+  margin-bottom:15px;
+  text-align:center;
+  backdrop-filter: blur(10px);
+}
+
+.level{
+  font-size:26px;
+  color:var(--gold);
+  font-weight:200;
+}
+
+.sub{
+  font-size:12px;
+  opacity:0.7;
+}
+
 /* XP BAR */
-.xpBar{
+.bar{
   height:8px;
   background:#111;
   border-radius:20px;
+  margin-top:12px;
   overflow:hidden;
-  margin:10px 0 20px;
 }
 
-.xpFill{
+.fill{
   height:100%;
   background:var(--gold);
   transition:0.3s;
@@ -52,21 +75,11 @@ body{
   border-radius:18px;
   padding:16px;
   margin-bottom:12px;
-  backdrop-filter: blur(10px);
   transition:0.2s;
 }
 
 .card:active{
   transform:scale(0.98);
-}
-
-/* header stats */
-.stats{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:10px;
-  font-size:12px;
-  opacity:0.8;
 }
 
 /* task */
@@ -80,7 +93,8 @@ body{
 
 /* check */
 .check{
-  width:18px;height:18px;
+  width:18px;
+  height:18px;
   border:1px solid var(--gold);
   border-radius:5px;
   display:flex;
@@ -88,20 +102,20 @@ body{
   justify-content:center;
 }
 
-/* level badge */
-.level{
-  text-align:center;
-  color:var(--gold);
-  font-size:20px;
-  margin:10px 0;
-}
-
-/* streak */
-.streak{
-  text-align:center;
+/* stats row */
+.row{
+  display:flex;
+  justify-content:space-between;
   font-size:12px;
   opacity:0.8;
-  margin-bottom:10px;
+}
+
+/* streak badge */
+.streak{
+  text-align:center;
+  color:var(--gold);
+  font-size:12px;
+  margin-top:8px;
 }
 </style>
 </head>
@@ -116,12 +130,12 @@ const {useState,useEffect,useMemo} = React;
 const clickSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-interface-click-1126.mp3");
 clickSound.volume = 0.3;
 
-const TASKS = [
-  {id:"t1",text:"تمارين"},
-  {id:"t2",text:"دراسة"},
-  {id:"t3",text:"إنجليزي"},
-  {id:"t4",text:"شغل / تطوير"},
-  {id:"t5",text:"قراءة"}
+const TASKS=[
+  {id:"1",t:"تمارين جسم"},
+  {id:"2",t:"دراسة"},
+  {id:"3",t:"إنجليزي"},
+  {id:"4",t:"شغل / مهارة"},
+  {id:"5",t:"قراءة / تطوير"}
 ];
 
 function App(){
@@ -130,55 +144,43 @@ const [done,setDone]=useState(()=>{
   return JSON.parse(localStorage.getItem("done")||"{}");
 });
 
-const [xp,setXp]=useState(()=>{
-  return Number(localStorage.getItem("xp")||0);
-});
+const [xp,setXp]=useState(Number(localStorage.getItem("xp")||0));
+const [streak,setStreak]=useState(Number(localStorage.getItem("streak")||0));
 
-const [streak,setStreak]=useState(()=>{
-  return Number(localStorage.getItem("streak")||0);
-});
+const today=new Date().toDateString();
 
-const todayKey=new Date().toDateString();
-
-/* reset daily tasks */
+/* daily reset */
 useEffect(()=>{
-  const last=localStorage.getItem("lastDay");
-
-  if(last!==todayKey){
+  const last=localStorage.getItem("last");
+  if(last!==today){
     setDone({});
     setStreak(s=>s+1);
-    localStorage.setItem("lastDay",todayKey);
+    localStorage.setItem("last",today);
   }
 },[]);
 
-/* save */
 useEffect(()=>{
   localStorage.setItem("done",JSON.stringify(done));
   localStorage.setItem("xp",xp);
   localStorage.setItem("streak",streak);
 },[done,xp,streak]);
 
-/* level system */
-const level=Math.floor(xp/100)+1;
-const progress=xp%100;
+const level=Math.floor(xp/120)+1;
+const progress=xp%120;
 
 const toggle=(id)=>{
 
 clickSound.play().catch(()=>{});
 
-/* haptic feedback (Xiaomi compatible) */
 if(navigator.vibrate) navigator.vibrate(40);
 
 setDone(prev=>{
-  const newState={...prev,[id]:!prev[id]};
+  const isNew=!prev[id];
 
-  if(!prev[id]){
-    setXp(x=>x+20); // reward XP
-  }else{
-    setXp(x=>Math.max(0,x-20));
-  }
+  if(isNew) setXp(x=>x+25);
+  else setXp(x=>Math.max(0,x-25));
 
-  return newState;
+  return {...prev,[id]:!prev[id]};
 });
 
 };
@@ -188,26 +190,24 @@ const completed=Object.values(done).filter(Boolean).length;
 return(
 <div className="container">
 
-{/* LEVEL */}
-<div className="card">
-<div className="level">LEVEL {level}</div>
+{/* HERO */}
+<div className="hero">
+  <div className="level">LEVEL {level}</div>
+  <div className="sub">BEAST MODE SYSTEM</div>
 
-<div className="streak">
-🔥 Streak: {streak} days
+  <div className="bar">
+    <div className="fill" style={{width:progress+"%"}}></div>
+  </div>
+
+  <div className="row" style={{marginTop:10}}>
+    <span>XP: {xp}</span>
+    <span>{completed}/{TASKS.length}</span>
+  </div>
+
+  <div className="streak">🔥 Streak: {streak} days</div>
 </div>
 
-<div className="stats">
-<span>XP: {xp}</span>
-<span>{completed}/{TASKS.length}</span>
-</div>
-
-<div className="xpBar">
-<div className="xpFill" style={{width:progress+"%"}}></div>
-</div>
-
-</div>
-
-{/* tasks */}
+{/* TASKS */}
 <div className="card">
 {TASKS.map(t=>(
 <div key={t.id}
@@ -220,16 +220,16 @@ style={{opacity:done[t.id]?0.4:1}}>
 </div>
 
 <div style={{flex:1,marginRight:10}}>
-{t.text}
+{t.t}
 </div>
 
 </div>
 ))}
 </div>
 
-{/* motivation */}
+{/* QUOTE */}
 <div className="card" style={{textAlign:"center",color:"#D4AF37"}}>
-"كل مهمة = نسخة أقوى منك"
+"Discipline is the real luxury."
 </div>
 
 </div>
