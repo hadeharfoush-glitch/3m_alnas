@@ -1,58 +1,221 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hadi | Mastery System</title>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@200;400;700&display=swap" rel="stylesheet">
-    <style>
-        :root { --gold: #D4AF37; --bg: #000; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Alexandria', sans-serif; }
-        .main-container { padding: 30px 20px; max-width: 480px; margin: 0 auto; }
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
-        .streak-val { font-size: 32px; font-weight: 700; color: var(--gold); }
-        .copy-pill { font-size: 13px; color: #ccc; border-right: 2px solid var(--gold); padding-right: 10px; margin-top: 10px; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+
+<title>HADI SYSTEM V12</title>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+:root{
+    --gold:#D4AF37;
+    --bg:#000;
+    --glass:rgba(255,255,255,0.04);
+}
+
+/* iOS style font stack */
+body{
+    margin:0;
+    background:var(--bg);
+    color:#fff;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    overflow-x:hidden;
+}
+
+.container{
+    max-width:500px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:var(--glass);
+    border:1px solid rgba(212,175,55,0.15);
+    border-radius:18px;
+    padding:16px;
+    margin-bottom:15px;
+    backdrop-filter: blur(15px);
+}
+
+.clock{
+    font-size:48px;
+    text-align:center;
+    color:var(--gold);
+    font-weight:200;
+    margin:20px 0;
+}
+
+.dayRow{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:20px;
+}
+
+.day{
+    text-align:center;
+    font-size:10px;
+    opacity:0.7;
+}
+
+.circle{
+    width:35px;
+    height:35px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,0.2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:5px;
+}
+
+.active .circle{
+    border-color:var(--gold);
+    background:rgba(212,175,55,0.1);
+}
+
+.task{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    cursor:pointer;
+}
+
+.check{
+    width:18px;
+    height:18px;
+    border:1px solid var(--gold);
+    border-radius:4px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.period{
+    font-size:10px;
+    color:var(--gold);
+    opacity:0.7;
+    letter-spacing:2px;
+    margin-bottom:10px;
+}
+</style>
 </head>
+
 <body>
-    <div id="root"></div>
-    <script type="text/babel">
-        function App() {
-            const [streak, setStreak] = useState(12); // مثال للـ Streak الحالي
-            const [copyTip, setCopyTip] = useState("معادلة PAS: Problem (مشكلة) -> Agitation (تضخيم) -> Solution (حل).");
+<div id="root"></div>
 
-            return (
-                <div className="main-container">
-                    {/* نظام الاستمرارية */}
-                    <div className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                            <div style={{ fontSize: '10px', color: '#888' }}>نظام الاستمرارية</div>
-                            <div className="streak-val">{streak} <span style={{fontSize: '16px', color: '#fff'}}>يوم انضباط</span></div>
-                        </div>
-                        <div style={{ width: '50px', height: '50px', borderRadius: '50%', border: '2px solid var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {Math.round((streak / 90) * 100)}%
-                        </div>
-                    </div>
+<script type="text/babel">
 
-                    {/* قاموس الكوبي رايتينج */}
-                    <div className="glass-card">
-                        <div style={{ fontSize: '10px', color: var(--gold), letterSpacing: '2px' }}>نصيحة الكوبي رايتينج اليومية</div>
-                        <div className="copy-pill">{copyTip}</div>
-                    </div>
+const {useState,useEffect,useMemo} = React;
 
-                    {/* تذكير FC Mobile */}
-                    <div className="glass-card" style={{ border: 'none', background: 'linear-gradient(45deg, #1a1608, #000)' }}>
-                        <div style={{ fontSize: '10px', color: '#D4AF37' }}>تكتيك الـ 122 OVR</div>
-                        <div style={{ fontSize: '14px', marginTop: '5px' }}>جرب التشكيلة الدفاعية المتوازنة (4-3-3 Holding) لضمان السيطرة في نمط المدير الفني.</div>
-                    </div>
-                </div>
-            );
-        }
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+const SOUND = "https://www.soundjay.com/buttons/sounds/button-09.mp3";
+
+const SCHEDULE = {
+  "الصباح":[
+    {id:"m1",text:"استيقاظ + تنظيم اليوم"},
+    {id:"m2",text:"تمارين جسم"},
+    {id:"m3",text:"قراءة تطوير"}
+  ],
+  "التركيز":[
+    {id:"p1",text:"دراسة المدرسة"},
+    {id:"p2",text:"إنجليزي"},
+    {id:"p3",text:"كوبي رايتينغ"}
+  ],
+  "المساء":[
+    {id:"e1",text:"رياضة أو نادي"},
+    {id:"e2",text:"Upwork / شغل"},
+    {id:"e3",text:"تخطيط بكرا"}
+  ]
+};
+
+function App(){
+
+const [time,setTime]=useState(new Date());
+const [done,setDone]=useState(()=>{
+    return JSON.parse(localStorage.getItem("done")||"{}");
+});
+
+useEffect(()=>{
+    setInterval(()=>setTime(new Date()),1000);
+},[]);
+
+useEffect(()=>{
+    localStorage.setItem("done",JSON.stringify(done));
+},[done]);
+
+const toggle=(id)=>{
+    const audio=new Audio(SOUND);
+    audio.volume=0.4;
+    audio.play().catch(()=>{});
+    
+    setDone(prev=>({...prev,[id]:!prev[id]}));
+};
+
+const progress=useMemo(()=>{
+    const all=Object.values(SCHEDULE).flat().length;
+    const ok=Object.values(done).filter(Boolean).length;
+    return Math.round((ok/all)*100);
+},[done]);
+
+const days=["أحد","إثن","ثلاث","أربع","خميس","جمعة","سبت"];
+
+return(
+<div className="container">
+
+{/* Days */}
+<div className="dayRow">
+{days.map((d,i)=>(
+<div key={i} className="day">
+{time.getDay()===i && <div style={{color:"#D4AF37"}}>{progress}%</div>}
+<div className="circle">{d}</div>
+</div>
+))}
+</div>
+
+{/* Clock */}
+<div className="clock">
+{time.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}
+</div>
+
+{/* Progress */}
+<div className="card">
+التقدم اليوم: {progress}%
+</div>
+
+{/* Tasks */}
+{Object.entries(SCHEDULE).map(([p,tasks])=>(
+<div className="card" key={p}>
+<div className="period">{p}</div>
+
+{tasks.map(t=>(
+<div className="task" key={t.id} onClick={()=>toggle(t.id)}
+style={{opacity:done[t.id]?0.4:1}}>
+
+<div className="check">
+{done[t.id] && "✓"}
+</div>
+
+<div style={{flex:1,marginRight:10}}>
+{t.text}
+</div>
+
+</div>
+))}
+
+</div>
+))}
+
+</div>
+);
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+
+</script>
 </body>
 </html>
