@@ -2,14 +2,56 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>روتين هادي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hadi | The System</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; background: #050505; font-family: sans-serif; color: #e8e4d9; }
-        /* سأضع لك التصميم هنا ليعمل الملف بشكل مستقل */
+        :root {
+            --bg: #050505;
+            --card-bg: rgba(25, 25, 35, 0.6);
+            --accent: #4a6fa5;
+            --success: #7ec8a0;
+            --text-main: #e8e4d9;
+            --text-dim: #888;
+            --ios-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            background-image: radial-gradient(circle at top right, #1a1a2e 0%, #050505 50%);
+            color: var(--text-main);
+            font-family: 'IBM Plex Sans Arabic', var(--ios-font);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+        }
+
+        .task-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            touch-action: manipulation;
+        }
+
+        .task-card:active { transform: scale(0.97); }
+
+        .progress-bar-inner {
+            transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -18,52 +60,132 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
+        const QUOTES = [
+            "خُـلـقـنـا لـ نَـتـرك أثـراً.",
+            "تعلقتُ بشمسٍ؛ كانت لغيري مطلعاً، ولي مغيباً.",
+            "العمق ليس في الكلمات، بل في الأثر الذي تتركه.",
+            "الانضباط هو الجسر بين الأهداف والإنجاز.",
+            "أنت سيد قرارك، ومستقبلك يبدأ من روتينك الآن."
+        ];
+
         const ROUTINE = [
-            { time: "7:30 - 8:00", period: "صباحاً", tasks: [{ id: "water", label: "كوب ماء", icon: "💧" }, { id: "hifz", label: "حفظ ديني", icon: "📖" }, { id: "breakfast", label: "فطور", icon: "🍳" }, { id: "fifa", label: "فيفا", icon: "🎮" }] },
-            { time: "10:00 - 12:00", period: "نهاراً", tasks: [{ id: "work", label: "شغل/كورس", icon: "💼" }, { id: "exercise", label: "رياضة", icon: "⚽" }] },
-            { time: "12:00 - 9:00", period: "بعد الظهر", tasks: [{ id: "free", label: "وقت حر", icon: "🌤️" }] },
-            { time: "9:00 - 10:00", period: "مساءً", tasks: [{ id: "journal", label: "يوميات", icon: "✍️" }, { id: "priority", label: "أولوية الغد", icon: "🎯" }, { id: "review", label: "مراجعة", icon: "🔄" }, { id: "read", label: "قراءة", icon: "📚" }, { id: "phone", label: "الموبايل بره", icon: "📵" }] }
+            { id: 'morning', title: "بداية الأثر", time: "07:30", tasks: [
+                { id: "water", label: "ارتواء (ماء)", icon: "💧" },
+                { id: "hifz", label: "الحفظ الديني", icon: "📖" },
+                { id: "breakfast", label: "تغذية", icon: "🍳" },
+                { id: "fifa", label: "مكافأة فيفا", icon: "🎮" }
+            ]},
+            { id: 'focus', title: "ساعات العمل", time: "10:00", tasks: [
+                { id: "work", label: "فريلانس / كورس كوبي رايتينج", icon: "💼" },
+                { id: "youtube", label: "إدارة القنوات / مشاريع مستقل", icon: "🎬" },
+                { id: "exercise", label: "تفريغ طاقة (رياضة)", icon: "⚽" }
+            ]},
+            { id: 'night', title: "مراجعة الصمت", time: "21:00", tasks: [
+                { id: "journal", label: "خاطرة اليوم", icon: "✍️" },
+                { id: "priority", label: "هدف الغد الوحيد", icon: "🎯" },
+                { id: "read", label: "قراءة عميقة", icon: "📚" },
+                { id: "off", label: "الهروب من الشاشة (📵)", icon: "📵" }
+            ]}
         ];
 
         function App() {
             const [checked, setChecked] = useState({});
-            const [note, setNote] = useState("");
+            const [streak, setStreak] = useState(0);
+            const [quote] = useState(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
 
             useEffect(() => {
-                const saved = localStorage.getItem('hadi-routine');
+                const saved = localStorage.getItem('hadi-pro-v1');
                 if (saved) setChecked(JSON.parse(saved));
+                // حساب الستريك تقريبياً من الذاكرة
+                setStreak(Number(localStorage.getItem('hadi-streak')) || 0);
             }, []);
 
             const toggle = (id) => {
                 const updated = { ...checked, [id]: !checked[id] };
                 setChecked(updated);
-                localStorage.setItem('hadi-routine', JSON.stringify(updated));
+                localStorage.setItem('hadi-pro-v1', JSON.stringify(updated));
+                
+                const totalTasks = ROUTINE.flatMap(r => r.tasks).length;
+                const doneCount = Object.values(updated).filter(Boolean).length;
+                if (doneCount === totalTasks) {
+                   const newStreak = streak + 1;
+                   setStreak(newStreak);
+                   localStorage.setItem('hadi-streak', newStreak);
+                }
             };
 
-            const progress = Math.round((Object.values(checked).filter(Boolean).length / 12) * 100);
+            const totalTasks = ROUTINE.flatMap(r => r.tasks).length;
+            const doneCount = Object.values(checked).filter(Boolean).length;
+            const progress = Math.round((doneCount / totalTasks) * 100);
+
+            const getLevel = () => {
+                if (streak < 5) return "مبتدئ طموح";
+                if (streak < 15) return "ملتزم محترف";
+                return "سيد الانضباط";
+            };
 
             return (
-                <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>
-                    <header style={{ textAlign: 'center', marginBottom: '30px' }}>
-                        <h1>روتين هادي 🔥</h1>
-                        <div style={{ background: '#1a1a2e', height: '10px', borderRadius: '5px' }}>
-                            <div style={{ width: `${progress}%`, background: '#7ec8a0', height: '100%', borderRadius: '5px', transition: '0.5s' }}></div>
+                <div style={{ padding: '30px 20px', maxWidth: '500px', margin: '0 auto', animation: 'fadeIn 0.8s ease-out' }}>
+                    
+                    {/* Header iPhone Style */}
+                    <header style={{ marginBottom: '40px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <h1 style={{ fontSize: '26px', fontWeight: '700', letterSpacing: '-1px' }}>طابت أيامك يا هادي</h1>
+                            <div className="glass" style={{ padding: '5px 15px', fontSize: '12px', color: var(--success) }}>{getLevel()}</div>
                         </div>
+                        <p style={{ color: 'var(--text-dim)', fontSize: '14px', fontStyle: 'italic' }}>"{quote}"</p>
                     </header>
-                    {ROUTINE.map((block, i) => (
-                        <div key={i} style={{ marginBottom: '25px' }}>
-                            <h3 style={{ color: '#4a6fa5', borderBottom: '1px solid #1a1a2e' }}>{block.period} ({block.time})</h3>
+
+                    {/* Level Card */}
+                    <div className="glass" style={{ padding: '20px', marginBottom: '35px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px', textTransform: 'uppercase' }}>تقدم اليوم</div>
+                        <div style={{ fontSize: '32px', fontWeight: '700', marginBottom: '15px' }}>{progress}%</div>
+                        <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
+                            <div className="progress-bar-inner" style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, var(--accent), var(--success))' }}></div>
+                        </div>
+                        <div style={{ marginTop: '15px', fontSize: '13px' }}>🔥 ستريك الحادي عشر: <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>{streak} أيام</span></div>
+                    </div>
+
+                    {/* Routine Blocks */}
+                    {ROUTINE.map((block) => (
+                        <div key={block.id} style={{ marginBottom: '35px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)' }}></div>
+                                <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>{block.title}</h2>
+                                <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{block.time}</span>
+                            </div>
+
                             {block.tasks.map(task => (
-                                <div key={task.id} onClick={() => toggle(task.id)} style={{ 
-                                    padding: '15px', background: checked[task.id] ? '#0d1f16' : '#0f0f15', 
-                                    marginBottom: '8px', borderRadius: '10px', cursor: 'pointer', display: 'flex', gap: '10px'
-                                }}>
-                                    <span>{checked[task.id] ? '✅' : '⬜'}</span>
-                                    <span>{task.icon} {task.label}</span>
+                                <div key={task.id} 
+                                     onClick={() => toggle(task.id)}
+                                     className="glass task-card" 
+                                     style={{ 
+                                        padding: '18px', 
+                                        marginBottom: '12px', 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '15px',
+                                        opacity: checked[task.id] ? 0.6 : 1,
+                                        borderRight: checked[task.id] ? `4px solid var(--success)` : '1px solid rgba(255,255,255,0.05)'
+                                     }}>
+                                    <div style={{ 
+                                        width: '24px', height: '24px', borderRadius: '50%', 
+                                        border: '2px solid rgba(255,255,255,0.1)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        background: checked[task.id] ? 'var(--success)' : 'transparent'
+                                    }}>
+                                        {checked[task.id] && <span style={{ color: '#000', fontSize: '14px', fontWeight: 'bold' }}>✓</span>}
+                                    </div>
+                                    <span style={{ fontSize: '20px' }}>{task.icon}</span>
+                                    <span style={{ fontSize: '15px', textDecoration: checked[task.id] ? 'line-through' : 'none' }}>{task.label}</span>
                                 </div>
                             ))}
                         </div>
                     ))}
+
+                    <footer style={{ textAlign: 'center', marginTop: '50px', color: 'var(--text-dim)', fontSize: '11px' }}>
+                        نظام الانضباط الشخصي - نسخة هادي حرفوش
+                    </footer>
                 </div>
             );
         }
