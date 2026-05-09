@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-<title>HADI SYSTEM v13</title>
+<title>HADI OS v14</title>
 
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -12,119 +11,142 @@
 
 <style>
 :root{
-    --gold:#D4AF37;
-    --bg:#000;
-    --glass:rgba(255,255,255,0.04);
-    --soft:rgba(212,175,55,0.18);
+  --gold:#D4AF37;
+  --bg:#000;
+  --glass:rgba(255,255,255,0.04);
+  --soft:rgba(212,175,55,0.15);
 }
 
-/* iOS REAL FEEL FONT */
+/* iOS SYSTEM FONT (خفيف + متوافق شاومي) */
 body{
-    margin:0;
-    background:var(--bg);
-    color:#fff;
-    font-family:-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif;
+  margin:0;
+  background:var(--bg);
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  overflow-x:hidden;
 }
 
-/* layout */
+/* container */
 .container{
-    max-width:520px;
-    margin:auto;
-    padding:20px;
+  max-width:520px;
+  margin:auto;
+  padding:18px;
 }
 
-/* glass premium */
+/* glass (خفيف للموبايل الضعيف) */
 .card{
-    background:var(--glass);
-    border:1px solid var(--soft);
-    border-radius:22px;
-    padding:18px;
-    margin-bottom:15px;
-    backdrop-filter: blur(25px);
-    box-shadow:0 10px 40px rgba(0,0,0,0.6);
+  background:var(--glass);
+  border:1px solid var(--soft);
+  border-radius:20px;
+  padding:16px;
+  margin-bottom:14px;
+
+  /* IMPORTANT: خففنا blur لتفادي تهنيج شاومي */
+  backdrop-filter: blur(10px);
+
+  box-shadow:0 6px 25px rgba(0,0,0,0.6);
+
+  /* animation خفيف */
+  transition:transform .2s ease, opacity .2s ease;
+}
+
+/* click feel */
+.card:active{
+  transform:scale(0.98);
 }
 
 /* clock */
 .clock{
-    font-size:52px;
-    text-align:center;
-    color:var(--gold);
-    font-weight:200;
-    margin:20px 0;
-    letter-spacing:-1px;
+  font-size:50px;
+  text-align:center;
+  color:var(--gold);
+  font-weight:200;
+  margin:18px 0;
+  letter-spacing:-1px;
 }
 
 /* days */
 .days{
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:20px;
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:18px;
 }
 
 .day{
-    text-align:center;
-    font-size:10px;
-    opacity:0.7;
+  text-align:center;
+  font-size:10px;
+  opacity:0.7;
 }
 
 .circle{
-    width:36px;
-    height:36px;
-    border-radius:50%;
-    border:1px solid rgba(255,255,255,0.2);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin-top:5px;
-    transition:0.2s;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,0.2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:5px;
+  transition:.2s;
 }
 
 .active .circle{
-    border-color:var(--gold);
-    background:rgba(212,175,55,0.12);
-    box-shadow:0 0 15px rgba(212,175,55,0.2);
+  border-color:var(--gold);
+  background:rgba(212,175,55,0.12);
 }
 
 /* task */
 .task{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:12px 0;
-    border-bottom:1px solid rgba(255,255,255,0.05);
-    transition:0.2s;
-    cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 0;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  cursor:pointer;
+  transition:.2s;
 }
 
 .task:active{
-    transform:scale(0.98);
+  transform:scale(0.98);
 }
 
+/* check */
 .check{
-    width:18px;
-    height:18px;
-    border:1px solid var(--gold);
-    border-radius:5px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+  width:18px;
+  height:18px;
+  border:1px solid var(--gold);
+  border-radius:5px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
 }
 
-/* period */
+/* title */
 .period{
-    font-size:10px;
-    color:var(--gold);
-    opacity:0.7;
-    letter-spacing:2px;
-    margin-bottom:10px;
+  font-size:10px;
+  color:var(--gold);
+  letter-spacing:2px;
+  margin-bottom:10px;
+  opacity:0.8;
 }
 
-/* small glow */
+/* glow text */
 .glow{
-    color:var(--gold);
-    text-align:center;
-    font-size:13px;
-    opacity:0.8;
+  text-align:center;
+  font-size:12px;
+  color:var(--gold);
+  opacity:0.7;
+}
+
+/* subtle fade in */
+.fade{
+  animation:fadeIn .4s ease;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(5px);}
+  to{opacity:1; transform:translateY(0);}
 }
 </style>
 </head>
@@ -136,26 +158,26 @@ body{
 
 const {useState,useEffect,useMemo} = React;
 
-/* 🔊 premium click sound */
-const clickSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-click-melodic-tone-1129.mp3");
-clickSound.volume = 0.4;
+/* 🔊 lightweight sound (works on Xiaomi) */
+const clickSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-interface-click-1126.mp3");
+clickSound.volume = 0.35;
 
 /* schedule */
-const SCHEDULE = {
+const SCHEDULE={
   "الصباح":[
-    {id:"m1",text:"استيقاظ + ترتيب اليوم"},
-    {id:"m2",text:"تمارين جسم"},
-    {id:"m3",text:"قراءة / تطوير"}
+    {id:"m1",t:"استيقاظ + ترتيب يومك"},
+    {id:"m2",t:"تمارين خفيفة"},
+    {id:"m3",t:"قراءة 15 دقيقة"}
   ],
   "التركيز":[
-    {id:"p1",text:"دراسة"},
-    {id:"p2",text:"إنجليزي"},
-    {id:"p3",text:"كوبي رايتينغ"}
+    {id:"p1",t:"دراسة"},
+    {id:"p2",t:"إنجليزي"},
+    {id:"p3",t:"مهارة عمل"}
   ],
   "المساء":[
-    {id:"e1",text:"نادي / رياضة"},
-    {id:"e2",text:"شغل Upwork"},
-    {id:"e3",text:"تخطيط بكرا"}
+    {id:"e1",t:"نادي / حركة"},
+    {id:"e2",t:"شغل أو تعلم"},
+    {id:"e3",t:"تخطيط بكرا"}
   ]
 };
 
@@ -163,33 +185,33 @@ function App(){
 
 const [time,setTime]=useState(new Date());
 const [done,setDone]=useState(()=>{
-    return JSON.parse(localStorage.getItem("done")||"{}");
+  return JSON.parse(localStorage.getItem("done")||"{}");
 });
 
 useEffect(()=>{
-    const t=setInterval(()=>setTime(new Date()),1000);
-    return ()=>clearInterval(t);
+  const i=setInterval(()=>setTime(new Date()),1000);
+  return ()=>clearInterval(i);
 },[]);
 
 useEffect(()=>{
-    localStorage.setItem("done",JSON.stringify(done));
+  localStorage.setItem("done",JSON.stringify(done));
 },[done]);
 
 const toggle=(id)=>{
-    clickSound.play().catch(()=>{});
-    setDone(prev=>({...prev,[id]:!prev[id]}));
+  try{ clickSound.play(); }catch(e){}
+  setDone(p=>({...p,[id]:!p[id]}));
 };
 
 const progress=useMemo(()=>{
-    const all=Object.values(SCHEDULE).flat().length;
-    const ok=Object.values(done).filter(Boolean).length;
-    return Math.round((ok/all)*100);
+  const all=Object.values(SCHEDULE).flat().length;
+  const ok=Object.values(done).filter(Boolean).length;
+  return Math.round((ok/all)*100);
 },[done]);
 
 const days=["أحد","إثن","ثلاث","أربع","خميس","جمعة","سبت"];
 
 return(
-<div className="container">
+<div className="container fade">
 
 {/* days */}
 <div className="days">
@@ -206,7 +228,7 @@ return(
 {time.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}
 </div>
 
-<div className="glow">SYSTEM ACTIVE • LEVEL LIFE</div>
+<div className="glow">HADI SYSTEM • FOCUS MODE</div>
 
 {/* progress */}
 <div className="card">
@@ -214,22 +236,23 @@ return(
 </div>
 
 {/* tasks */}
-{Object.entries(SCHEDULE).map(([p,tasks])=>(
+{Object.entries(SCHEDULE).map(([p,arr])=>(
 <div className="card" key={p}>
+
 <div className="period">{p}</div>
 
-{tasks.map(t=>(
-<div className="task"
-key={t.id}
-onClick={()=>toggle(t.id)}
-style={{opacity:done[t.id]?0.4:1}}>
+{arr.map(x=>(
+<div key={x.id}
+className="task"
+onClick={()=>toggle(x.id)}
+style={{opacity:done[x.id]?0.4:1}}>
 
 <div className="check">
-{done[t.id] && "✓"}
+{done[x.id] && "✓"}
 </div>
 
 <div style={{flex:1,marginRight:10}}>
-{t.text}
+{x.t}
 </div>
 
 </div>
