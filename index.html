@@ -3,55 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hadi | Elite Blueprint</title>
+    <title>Hadi Elite System</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@200;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --gold: #D4AF37;
-            --bg: #000;
-            --glass: rgba(255, 255, 255, 0.03);
-            --ios-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Alexandria", sans-serif;
-        }
         body {
-            margin: 0; background: var(--bg); color: #fff;
-            font-family: var(--ios-font); -webkit-font-smoothing: antialiased;
-            background-image: radial-gradient(circle at top right, #1a1608 0%, #000 70%);
-            padding-bottom: 50px;
+            margin: 0; padding: 0;
+            background-color: #000000 !important; /* ضمان السواد التام */
+            background-image: radial-gradient(circle at top right, #1a1608 0%, #000 70%) !important;
+            color: #ffffff;
+            font-family: 'Alexandria', -apple-system, sans-serif;
+            direction: rtl;
         }
         .glass-card {
-            background: var(--glass); backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(212, 175, 55, 0.1);
-            border-radius: 22px; margin-bottom: 20px;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
-        .clock-v9 {
-            font-size: 60px; font-weight: 200; text-align: center;
-            color: var(--gold); margin: 30px 0 10px 0;
+        .gold-text { color: #D4AF37; }
+        .clock { font-size: 50px; text-align: center; margin: 20px 0; font-weight: 200; color: #D4AF37; }
+        .task-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.03);
+            cursor: pointer;
         }
-        .score-pill {
-            background: var(--gold); color: #000; padding: 5px 15px;
-            border-radius: 20px; font-weight: 700; font-size: 14px;
-        }
-        .day-box {
-            width: 40px; height: 50px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.05); font-size: 11px;
-        }
-        .day-active { border-color: var(--gold); background: rgba(212, 175, 55, 0.15); color: var(--gold); }
-        .task-row {
-            padding: 18px; display: flex; align-items: center; gap: 15px;
-            cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.02);
-        }
-        .check-v9 {
-            width: 22px; height: 22px; border: 1.5px solid var(--gold);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        }
-        .btn-main {
-            background: none; border: 1px solid var(--gold); color: var(--gold);
-            padding: 15px; border-radius: 15px; width: 100%; font-weight: 700;
+        .checkbox {
+            width: 20px; height: 20px; border: 1px solid #D4AF37; border-radius: 50%;
         }
     </style>
 </head>
@@ -60,103 +43,48 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const TASKS = [
-            { id: "h1", label: "الحفظ الديني والورد", i: "📖" },
-            { id: "h2", label: "تطوير تشكيلة FC Mobile", i: "⚽" },
-            { id: "h3", label: "دراسة ركائز الكوبي رايتينج", i: "✍️" },
-            { id: "h4", label: "باقات مستقل و Upwork", i: "🎯" },
-            { id: "h5", label: "منهج الحادي عشر (عربي/وطنية)", i: "📚" },
-            { id: "h6", label: "اللغة الإنجليزية (Smart Way)", i: "🌐" }
-        ];
-
         function App() {
             const [time, setTime] = useState(new Date());
-            const [score, setScore] = useState(0);
             const [checked, setChecked] = useState({});
-            const [isTimerOn, setIsTimerOn] = useState(false);
-            const [timeLeft, setTimeLeft] = useState(2700);
 
             useEffect(() => {
-                const clock = setInterval(() => setTime(new Date()), 1000);
-                const saved = JSON.parse(localStorage.getItem('hadi_v9') || '{}');
-                setScore(saved.score || 0);
-                setChecked(saved.tasks || {});
-                return () => clearInterval(clock);
+                const timer = setInterval(() => setTime(new Date()), 1000);
+                return () => clearInterval(timer);
             }, []);
 
-            const playSound = (isDone) => {
-                const audio = new Audio(isDone ? 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3' : 'https://www.soundjay.com/buttons/sounds/button-50.mp3');
-                audio.play().catch(() => {});
-            };
-
-            const toggleTask = (id) => {
-                playSound(false);
-                const newChecked = { ...checked, [id]: !checked[id] };
-                const newScore = newChecked[id] ? score + 25 : score - 25;
-                setChecked(newChecked);
-                setScore(newScore);
-                localStorage.setItem('hadi_v9', JSON.stringify({ score: newScore, tasks: newChecked }));
-            };
+            const tasks = [
+                { id: 1, text: "ورد الحفظ الديني", icon: "📖" },
+                { id: 2, text: "تكتيكات FC Mobile", icon: "⚽" },
+                { id: 3, text: "دراسة الكوبي رايتينج", icon: "✍️" },
+                { id: 4, text: "منهاج الحادي عشر", icon: "📚" },
+                { id: 5, text: "لغة إنجليزية (Smart)", icon: "🌐" }
+            ];
 
             return (
-                <div style={{ padding: '30px 20px', maxWidth: '480px', margin: '0 auto' }}>
-                    
-                    {/* Top Bar */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <div className="score-pill">XP: {score}</div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>{time.toLocaleDateString('ar-SY')}</div>
+                <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#888' }}>
+                        <span>إصدار النخبة V9.1</span>
+                        <span>{time.toLocaleDateString('ar-SY')}</span>
                     </div>
 
-                    {/* English Clock */}
-                    <div className="clock-v9">
+                    <div className="clock">
                         {time.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
                     </div>
 
-                    {/* 7-Day Calendar */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-                        {["أحد", "إثن", "ثلاث", "أربع", "خميس", "جمعة", "سبت"].map((d, i) => (
-                            <div key={i} className={`day-box ${time.getDay() === i ? 'day-active' : ''}`}>
-                                <span>{d}</span>
-                                <span style={{fontWeight: 'bold'}}>{time.getDate() - (time.getDay() - i)}</span>
+                    <div className="glass-card" style={{ borderRight: '4px solid #D4AF37' }}>
+                        <div style={{ fontSize: '10px', color: '#D4AF37' }}>خاطرة اليوم</div>
+                        <div style={{ marginTop: '5px', fontStyle: 'italic' }}>"خُلقنا لـ نَترك أثراً"</div>
+                    </div>
+
+                    <div className="glass-card" style={{ padding: '10px 0' }}>
+                        {tasks.map(task => (
+                            <div key={task.id} className="task-item" onClick={() => setChecked({...checked, [task.id]: !checked[task.id]})}>
+                                <div className="checkbox" style={{ background: checked[task.id] ? '#D4AF37' : 'transparent' }}></div>
+                                <span style={{ fontSize: '18px' }}>{task.icon}</span>
+                                <span style={{ flex: 1, opacity: checked[task.id] ? 0.3 : 1 }}>{task.text}</span>
                             </div>
                         ))}
                     </div>
-
-                    {/* Daily Insight */}
-                    <div className="glass-card" style={{ padding: '20px', borderRight: '4px solid var(--gold)' }}>
-                        <div style={{fontSize: '10px', color: var(--gold), marginBottom: '5px'}}>تحفيز اليوم</div>
-                        <div style={{fontSize: '14px', fontStyle: 'italic'}}>
-                            "تعلقتُ بشمسٍ؛ كانت لغيري مطلعاً، ولي مغيباً."
-                        </div>
-                    </div>
-
-                    {/* Focus Timer */}
-                    <div className="glass-card" style={{ padding: '30px', textAlign: 'center' }}>
-                        <div style={{fontSize: '10px', color: '#888', marginBottom: '10px'}}>جلسة التركيز العميق (45د)</div>
-                        <div style={{fontSize: '40px', fontWeight: '200', marginBottom: '20px'}}>
-                            {Math.floor(timeLeft/60)}:{String(timeLeft%60).padStart(2,'0')}
-                        </div>
-                        <button className="btn-main" onClick={() => setIsTimerOn(!isTimerOn)}>
-                            {isTimerOn ? 'تعليق الجلسة' : 'بدء الانغماس'}
-                        </button>
-                    </div>
-
-                    {/* Tasks Section */}
-                    <div className="glass-card" style={{ padding: '5px 0' }}>
-                        {TASKS.map(t => (
-                            <div key={t.id} className="task-row" onClick={() => toggleTask(t.id)} style={{ opacity: checked[t.id] ? 0.3 : 1 }}>
-                                <div className="check-v9" style={{ background: checked[t.id] ? 'var(--gold)' : 'transparent' }}>
-                                    {checked[t.id] && <span style={{color: '#000', fontSize: '10px'}}>✓</span>}
-                                </div>
-                                <span style={{fontSize: '20px'}}>{t.i}</span>
-                                <span style={{fontSize: '15px', flex: 1, textDecoration: checked[t.id] ? 'line-through' : 'none'}}>{t.label}</span>
-                            </div>
-                        ))}
-                    </div>
-
-                    <footer style={{ textAlign: 'center', color: '#333', fontSize: '10px', letterSpacing: '4px', marginTop: '30px' }}>
-                        HADI HARFOUSH • ELITE V9
-                    </footer>
                 </div>
             );
         }
