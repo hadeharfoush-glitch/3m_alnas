@@ -4,496 +4,690 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>HADI OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 
 <style>
-/* ── RESET & BASE ─────────────────────────────── */
-*{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════ */
 :root{
-  --gold: #D4AF37;
-  --gold2: #F0D060;
-  --bg: #000;
-  --card: rgba(255,255,255,0.04);
-  --border: rgba(212,175,55,0.18);
-  --red: #ff4d4d;
+  --gold:      #D4AF37;
+  --gold-soft: rgba(212,175,55,0.15);
+  --gold-dim:  rgba(212,175,55,0.08);
+  --bg:        #050507;
+  --surface:   #0e0e12;
+  --surface2:  #141418;
+  --border:    rgba(212,175,55,0.14);
+  --border2:   rgba(255,255,255,0.06);
+  --text:      #f0ede6;
+  --muted:     rgba(240,237,230,0.4);
+  --red:       #ff4d4d;
+  --green:     #4ade80;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
 }
+
+/* ═══════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
 body{
   background: var(--bg);
-  color: #fff;
-  /* iOS system font — SF Pro */
-  font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI", Arial;
+  color: var(--text);
+  font-family: -apple-system,"SF Pro Display","Inter",sans-serif;
   min-height: 100vh;
-  /* safe area for iPhone notch */
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  /* subtle noise texture */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
 }
 
-/* ── LAYOUT ────────────────────────────────────── */
+/* ═══════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
 .wrap{
-  max-width: 480px;
+  max-width: 500px;
   margin: 0 auto;
-  padding: 28px 16px 40px;
+  padding: 24px 16px 60px;
 }
 
-/* ── HERO CARD ─────────────────────────────────── */
-.hero{
-  background: linear-gradient(145deg, rgba(212,175,55,0.1), rgba(0,0,0,0.3));
+/* ═══════════════════════════════════════════
+   SECTION LABEL
+═══════════════════════════════════════════ */
+.section-label{
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.6;
+  margin: 22px 0 10px 4px;
+}
+
+/* ═══════════════════════════════════════════
+   CARD BASE
+═══════════════════════════════════════════ */
+.card{
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 26px;
-  padding: 22px;
-  margin-bottom: 14px;
-  position: relative;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  /* iOS spring feel */
-  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
 }
 
-.hero::before{
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 80% 20%, rgba(212,175,55,0.07) 0%, transparent 60%);
-  pointer-events: none;
+/* ═══════════════════════════════════════════
+   HERO CARD
+═══════════════════════════════════════════ */
+.hero{
+  padding: 22px;
+  margin-bottom: 10px;
+  background:
+    radial-gradient(ellipse at 90% 10%, rgba(212,175,55,0.09) 0%, transparent 55%),
+    var(--surface);
+  position: relative;
 }
 
-.hero-top{ display:flex; justify-content:space-between; align-items:flex-start; }
+.hero-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
 
-.level-num{ font-size:32px; font-weight:200; color:var(--gold); letter-spacing:1px; }
-.level-title{ font-size:13px; color:var(--gold); opacity:0.6; margin-top:2px; }
+.hero-left .level{
+  font-size: 30px;
+  font-weight: 200;
+  color: var(--gold);
+  letter-spacing: 2px;
+  line-height: 1;
+}
+.hero-left .title{
+  font-size: 13px;
+  color: var(--gold);
+  opacity: 0.55;
+  margin-top: 5px;
+  letter-spacing: 0.3px;
+}
 
-.streak-box{ text-align:center; }
-.streak-fire{ font-size:26px; display:block; }
-.streak-days{ font-size:12px; opacity:0.5; margin-top:2px; }
+/* streak pill */
+.streak-pill{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-soft);
+  border-radius: 30px;
+  padding: 6px 14px;
+  font-size: 13px;
+}
+.streak-pill .fire{ font-size:16px; }
+.streak-pill .days{ color: var(--gold); font-weight: 500; }
 
-.xp-row{ display:flex; justify-content:space-between; font-size:12px; opacity:0.5; margin:14px 0 6px; }
+/* stat row */
+.stat-row{ display:flex; gap:10px; margin-bottom:14px; }
+.stat-box{
+  flex:1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.stat-box .val{ font-size:18px; font-weight:300; color:var(--gold); }
+.stat-box .lbl{ font-size:11px; color:var(--muted); margin-top:2px; }
 
-/* XP bar */
-.bar{ height:7px; background:#111; border-radius:20px; overflow:hidden; }
+/* xp bar */
+.bar-label{ display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-bottom:6px; }
+.bar{ height:6px; background:#1a1a20; border-radius:20px; overflow:hidden; }
 .fill{
   height:100%;
   background: var(--gold);
   border-radius:20px;
   transition: width 0.5s cubic-bezier(.34,1.56,.64,1);
 }
-
-/* ── TASKS CARD ─────────────────────────────────── */
-.tasks-card{
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  padding: 4px 16px;
-  margin-bottom: 12px;
+.fill.shimmer{
+  background: linear-gradient(90deg, var(--gold) 25%, #fff8a0 50%, var(--gold) 75%);
+  background-size: 200% auto;
+  animation: shimmer 2s linear infinite;
 }
+
+/* ═══════════════════════════════════════════
+   WEEK TRACKER
+═══════════════════════════════════════════ */
+.week-row{
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+.day-dot{
+  flex:1;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--muted);
+  flex-direction: column;
+  gap: 2px;
+  cursor: default;
+  transition: all 0.3s ease;
+  max-width: 52px;
+}
+.day-dot .day-name{ font-size:9px; letter-spacing:0.3px; }
+.day-dot .day-score{ font-size:11px; font-weight:600; }
+.day-dot.done-full{
+  background: var(--gold-dim);
+  border-color: var(--gold-soft);
+  color: var(--gold);
+}
+.day-dot.done-partial{
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.15);
+  color: rgba(240,237,230,0.7);
+}
+.day-dot.today-ring{
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold);
+}
+
+/* ═══════════════════════════════════════════
+   BOSS BATTLE
+═══════════════════════════════════════════ */
+.boss-card{
+  padding: 16px 18px;
+  background:
+    radial-gradient(ellipse at 10% 90%, rgba(255,60,60,0.06) 0%, transparent 50%),
+    var(--surface);
+}
+.boss-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.boss-name{ font-size:15px; font-weight:500; }
+.boss-badge{
+  font-size:11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(255,60,60,0.12);
+  border: 1px solid rgba(255,60,60,0.25);
+  color: #ff8080;
+}
+.boss-bar-wrap{ height:8px; background:#1a1a20; border-radius:20px; overflow:hidden; margin-bottom:8px; }
+.boss-bar-fill{
+  height:100%;
+  background: linear-gradient(90deg, #ff4d4d, #ff8c42);
+  border-radius:20px;
+  transition: width 0.5s cubic-bezier(.34,1.56,.64,1);
+}
+.boss-meta{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); }
+
+/* ═══════════════════════════════════════════
+   TASKS
+═══════════════════════════════════════════ */
+.tasks-card{ padding: 4px 16px; }
 
 .task{
   display: flex;
   align-items: center;
   gap: 13px;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border2);
   cursor: pointer;
-  /* iOS spring */
   transition: transform 0.15s cubic-bezier(.34,1.56,.64,1), opacity 0.25s;
   user-select: none;
 }
+.task:last-of-type{ border-bottom:none; }
+.task.pressed{ transform: scale(0.975); }
+.task.done-task{ opacity:0.35; }
 
-.task:last-child{ border-bottom: none; }
-
-/* Pressed state via JS class */
-.task.pressed{ transform: scale(0.97); }
-
-.task.done{ opacity: 0.38; }
-
-/* Checkbox */
 .chk{
-  width: 22px; height: 22px;
-  border: 1.5px solid rgba(212,175,55,0.45);
+  width:22px; height:22px;
+  border: 1.5px solid rgba(212,175,55,0.4);
   border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
   transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
 }
-
 .chk.on{
   background: var(--gold);
   border-color: var(--gold);
-  /* subtle bounce */
   animation: chkBounce 0.3s cubic-bezier(.34,1.56,.64,1);
 }
-
 @keyframes chkBounce{
-  0%  { transform: scale(0.7); }
-  100%{ transform: scale(1);   }
+  0%  { transform: scale(0.65); }
+  100%{ transform: scale(1); }
 }
 
 .task-icon{ font-size:18px; }
-.task-label{ flex:1; font-size:15.5px; font-weight:400; letter-spacing:-0.2px; }
+.task-label{ flex:1; font-size:15px; letter-spacing:-0.2px; }
 .task-xp{ font-size:11px; color:var(--gold); opacity:0.4; }
 
-/* ── STATUS CARD ─────────────────────────────────── */
-.status{
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 16px;
-  text-align: center;
-  transition: all 0.4s ease;
-  margin-bottom: 14px;
+/* delete btn */
+.del-btn{
+  width:22px; height:22px;
+  border:none; background:none;
+  color:rgba(255,80,80,0.45);
+  font-size:18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:50%;
+  transition: color 0.2s, background 0.2s;
+  flex-shrink:0;
+}
+.del-btn:hover{ color:#ff4d4d; background:rgba(255,60,60,0.12); }
+
+/* Add task row */
+.add-row{
+  display:flex; gap:8px;
+  padding: 10px 0 6px;
+  border-top: 1px solid var(--border2);
+}
+.add-input{
+  flex:1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: inherit;
+  font-size:14px;
+  outline:none;
+  transition: border-color 0.2s;
+}
+.add-input::placeholder{ color:var(--muted); }
+.add-input:focus{ border-color: rgba(212,175,55,0.4); }
+
+.add-btn{
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-soft);
+  border-radius: var(--radius-sm);
+  color: var(--gold);
+  font-size:20px;
+  width:42px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition: background 0.2s;
+}
+.add-btn:hover{ background: var(--gold-soft); }
+
+/* ═══════════════════════════════════════════
+   FOCUS TIMER
+═══════════════════════════════════════════ */
+.focus-card{ padding:20px; text-align:center; }
+
+.timer-ring-wrap{
+  position:relative;
+  width:130px; height:130px;
+  margin: 0 auto 16px;
+}
+.timer-ring-wrap svg{
+  transform: rotate(-90deg);
+}
+.timer-ring-bg{ fill:none; stroke:#1a1a20; stroke-width:6; }
+.timer-ring-fg{
+  fill:none;
+  stroke: var(--gold);
+  stroke-width:6;
+  stroke-linecap:round;
+  transition: stroke-dashoffset 1s linear;
+}
+.timer-time{
+  position:absolute;
+  inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:26px;
+  font-weight:200;
+  letter-spacing:1px;
+  color: var(--gold);
 }
 
-.status.all-done{
-  background: rgba(212,175,55,0.08);
-  border-color: rgba(212,175,55,0.5);
+.timer-task-label{
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:16px;
+  min-height:18px;
+}
+
+.timer-btns{ display:flex; gap:10px; justify-content:center; }
+.timer-btn{
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size:13px;
+  padding:9px 20px;
+  cursor:pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.timer-btn:hover{ background:var(--gold-dim); border-color:var(--gold-soft); }
+.timer-btn.primary{
+  background:var(--gold-dim);
+  border-color:var(--gold-soft);
+  color:var(--gold);
+  font-weight:500;
+}
+
+.task-pick{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px; justify-content:center; }
+.pick-chip{
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  padding:6px 14px;
+  font-size:12px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.pick-chip:hover{ border-color:var(--gold-soft); color:var(--gold); }
+.pick-chip.active{ background:var(--gold-dim); border-color:var(--gold-soft); color:var(--gold); }
+
+/* ═══════════════════════════════════════════
+   JOURNAL
+═══════════════════════════════════════════ */
+.journal-card{ padding:16px; }
+.journal-date{ font-size:12px; color:var(--muted); margin-bottom:10px; }
+.journal-input{
+  width:100%;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:var(--radius-sm);
+  padding:12px 14px;
+  color:var(--text);
+  font-family:inherit;
+  font-size:14px;
+  resize:none;
+  outline:none;
+  min-height:80px;
+  line-height:1.6;
+  transition:border-color 0.2s;
+}
+.journal-input::placeholder{ color:var(--muted); }
+.journal-input:focus{ border-color:rgba(212,175,55,0.3); }
+.journal-history{ margin-top:12px; display:flex; flex-direction:column; gap:8px; }
+.journal-entry{
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:var(--radius-sm);
+  padding:10px 14px;
+}
+.journal-entry .j-date{ font-size:11px; color:var(--muted); margin-bottom:4px; }
+.journal-entry .j-text{ font-size:13px; line-height:1.5; opacity:0.8; }
+
+/* ═══════════════════════════════════════════
+   STATUS
+═══════════════════════════════════════════ */
+.status-card{
+  padding:16px;
+  text-align:center;
+  transition:all 0.4s ease;
+}
+.status-card.all-done{
+  background: var(--gold-dim);
+  border-color: rgba(212,175,55,0.4);
   animation: statusPulse 2.5s ease infinite;
 }
-
 @keyframes statusPulse{
-  0%,100%{ box-shadow: 0 0 0 0 rgba(212,175,55,0.3); }
-  50%    { box-shadow: 0 0 0 10px rgba(212,175,55,0); }
+  0%,100%{ box-shadow:0 0 0 0 rgba(212,175,55,0.25); }
+  50%    { box-shadow:0 0 0 12px rgba(212,175,55,0); }
 }
-
 .status-done-title{ color:var(--gold); font-size:16px; font-weight:500; }
-.status-done-sub  { font-size:12px; opacity:0.5; margin-top:4px; }
-.status-count     { font-size:22px; color:var(--gold); margin:4px 0; }
-.status-label     { font-size:12px; opacity:0.5; }
+.status-done-sub  { font-size:12px; color:var(--muted); margin-top:5px; }
+.status-count     { font-size:24px; font-weight:200; color:var(--gold); margin:4px 0; }
+.status-label     { font-size:12px; color:var(--muted); }
 .status-warn      { font-size:12px; color:var(--red); margin-top:8px; }
 
-/* ── MOTIVATIONAL QUOTE ─────────────────────────── */
-.quote{
-  text-align: center;
-  font-size: 12px;
-  opacity: 0.25;
-  padding: 0 12px;
-  line-height: 1.7;
-  font-style: italic;
+/* daily score big */
+.score-big{
+  font-size:52px;
+  font-weight:200;
+  color:var(--gold);
+  line-height:1;
+  margin-bottom:4px;
 }
+.score-label{ font-size:12px; color:var(--muted); }
 
-/* ── POPUP FEEDBACK ─────────────────────────────── */
+/* ═══════════════════════════════════════════
+   POPUP
+═══════════════════════════════════════════ */
 #popup{
-  position: fixed;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%) translateY(0);
-  padding: 8px 22px;
-  border-radius: 30px;
-  font-weight: 700;
-  font-size: 15px;
-  pointer-events: none;
-  opacity: 0;
-  z-index: 999;
-  transition: none;
+  position:fixed;
+  top:70px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:8px 24px;
+  border-radius:30px;
+  font-weight:700;
+  font-size:15px;
+  pointer-events:none;
+  opacity:0;
+  z-index:999;
 }
-
-#popup.show{
-  animation: popUp 1.4s cubic-bezier(.34,1.56,.64,1) forwards;
-}
-
+#popup.show{ animation:popUp 1.4s cubic-bezier(.34,1.56,.64,1) forwards; }
 @keyframes popUp{
-  0%  { opacity:1; transform: translateX(-50%) translateY(0);    }
-  70% { opacity:1; transform: translateX(-50%) translateY(-20px);}
-  100%{ opacity:0; transform: translateX(-50%) translateY(-30px);}
+  0%  { opacity:1; transform:translateX(-50%) translateY(0); }
+  70% { opacity:1; transform:translateX(-50%) translateY(-22px); }
+  100%{ opacity:0; transform:translateX(-50%) translateY(-32px); }
 }
 
-/* ── SHIMMER (bar when all done) ────────────────── */
-.shimmer{
-  background: linear-gradient(90deg, var(--gold) 25%, var(--gold2) 50%, var(--gold) 75%);
-  background-size: 200% auto;
-  animation: shimmer 2s linear infinite;
-}
-
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════ */
 @keyframes shimmer{
-  0%  { background-position: 200% center; }
-  100%{ background-position: -200% center;}
+  0%  { background-position:200% center; }
+  100%{ background-position:-200% center; }
 }
+
+/* ═══════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════ */
+::-webkit-scrollbar{ width:4px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{ background:rgba(212,175,55,0.2); border-radius:4px; }
 </style>
 </head>
-
 <body>
+
 <div id="popup"></div>
-
-<div class="wrap">
-
-  <!-- HERO -->
-  <div class="hero" id="hero">
-    <div class="hero-top">
-      <div>
-        <div class="level-num" id="levelNum">LEVEL 1</div>
-        <div class="level-title" id="levelTitle">مبتدئ</div>
-      </div>
-      <div class="streak-box">
-        <span class="streak-fire">🔥</span>
-        <span class="streak-days" id="streakDays">0 يوم</span>
-      </div>
-    </div>
-
-    <div class="xp-row">
-      <span id="xpLeft">XP: 0</span>
-      <span id="xpRight">0 / 120</span>
-    </div>
-
-    <div class="bar">
-      <div class="fill" id="xpFill" style="width:0%"></div>
-    </div>
-  </div>
-
-  <!-- TASKS -->
-  <div class="tasks-card" id="taskList"></div>
-
-  <!-- STATUS -->
-  <div class="status" id="status">
-    <div class="status-label">التقدم اليوم</div>
-    <div class="status-count" id="statusCount">0 / 5</div>
-    <div class="status-warn" id="statusWarn"></div>
-  </div>
-
-  <!-- QUOTE -->
-  <div class="quote" id="quote"></div>
-
-</div>
+<div class="wrap" id="app"></div>
 
 <script>
-/* ═══════════════════════════════════════════════
-   HADI OS — Core Engine
-   بدون React — Vanilla JS خالص
-═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   HADI OS v3 — Full Engine
+   Vanilla JS, no frameworks
+═══════════════════════════════════════════════════════ */
 
-/* ── DATA ───────────────────────────────────── */
-const TASKS = [
-  { id:"1", label:"تمارين",  icon:"⚽" },
-  { id:"2", label:"دراسة",   icon:"📚" },
-  { id:"3", label:"إنجليزي", icon:"🌐" },
-  { id:"4", label:"مهارة",   icon:"🛠️" },
-  { id:"5", label:"قراءة",   icon:"📖" },
+/* ── CONSTANTS ──────────────────────────────────── */
+const XP_PER_LEVEL = 150;
+const XP_TASK      = 20;
+const XP_BONUS     = 30;    // all done bonus
+const XP_UNDO      = -15;
+const XP_MISS      = -20;
+const POMODORO_SEC = 25 * 60;
+
+const LEVEL_TITLES = ["مبتدئ","مثابر","منضبط","محترف","أسطورة","لا يُهزم"];
+
+const BOSS_WEEK = {
+  name:"أسبوع الانضباط",
+  description:"أكمل 5 أيام كاملة هذا الأسبوع",
+  target: 5
+};
+
+const DEFAULT_TASKS = [
+  {id:"1", label:"تمارين",  icon:"⚽"},
+  {id:"2", label:"دراسة",   icon:"📚"},
+  {id:"3", label:"إنجليزي", icon:"🌐"},
+  {id:"4", label:"مهارة",   icon:"🛠️"},
+  {id:"5", label:"قراءة",   icon:"📖"},
 ];
 
-const LEVEL_TITLES = ["مبتدئ","مثابر","منضبط","محترف","أسطورة"];
+/* ── STORAGE ─────────────────────────────────────── */
+const S = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v!==null ? JSON.parse(v) : d; }catch{ return d; } },
+  set(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+};
 
-const QUOTES = [
-  "الانضباط هو الحرية الحقيقية.",
-  "كل يوم صغير يبني نسخة أفضل منك.",
-  "لا تنتظر الحافز — ابدأ والحافز سيتبعك.",
-  "التكرار يصنع الأسطورة.",
-];
-
-const XP_PER_LEVEL = 120;
-const XP_TASK   = 20;   // per task check
-const XP_BONUS  = 30;   // all tasks done
-const XP_UNDO   = -15;  // uncheck penalty
-const XP_MISS   = -20;  // missed full day
-
-/* ── STORAGE ────────────────────────────────── */
-function load(k, def){ try{ return JSON.parse(localStorage.getItem(k)) ?? def; }catch{ return def; } }
-function save(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
-
-let xp     = load("h-xp", 0);
-let streak = load("h-streak", 0);
-let done   = load("h-done", {});
-let last   = load("h-last", "");
+/* ── STATE ───────────────────────────────────────── */
+let state = {
+  xp:      S.get("h-xp", 0),
+  streak:  S.get("h-streak", 0),
+  done:    S.get("h-done", {}),
+  last:    S.get("h-last", ""),
+  tasks:   S.get("h-tasks", DEFAULT_TASKS),
+  history: S.get("h-history", {}),   // { "Mon May 06 2025": { score:80, count:4, total:5 } }
+  journal: S.get("h-journal", {}),   // { "Mon May 06 2025": "text..." }
+  bossProgress: S.get("h-boss", 0),
+};
 
 const today = new Date().toDateString();
 
-/* ── DAY-CHANGE ENGINE ──────────────────────── */
-if(last && last !== today){
-  const prev = Object.values(done).filter(Boolean).length;
-  if(prev === 0){
-    xp = Math.max(0, xp + XP_MISS);
-    streak = 0;
-  } else if(prev === TASKS.length){
-    streak++;
-  }
-  done = {};
-}
-save("h-last", today);
+/* ── DAY-CHANGE ENGINE ───────────────────────────── */
+if(state.last && state.last !== today){
+  const prev    = Object.values(state.done).filter(Boolean).length;
+  const total   = state.tasks.length;
+  const score   = total > 0 ? Math.round((prev / total) * 100) : 0;
 
-/* ── AUDIO ENGINE ───────────────────────────── */
-// Web Audio API — no external files needed, pure sine tones
+  // Save yesterday to history
+  state.history[state.last] = { score, count:prev, total };
+  S.set("h-history", state.history);
+
+  if(prev === 0){
+    state.xp = Math.max(0, state.xp + XP_MISS);
+    state.streak = 0;
+  } else if(prev === total){
+    state.streak++;
+    state.bossProgress = Math.min(state.bossProgress + 1, BOSS_WEEK.target);
+  }
+
+  state.done = {};
+}
+S.set("h-last", today);
+
+/* ── PERSIST ─────────────────────────────────────── */
+function persist(){
+  S.set("h-xp",     state.xp);
+  S.set("h-streak", state.streak);
+  S.set("h-done",   state.done);
+  S.set("h-tasks",  state.tasks);
+  S.set("h-boss",   state.bossProgress);
+}
+
+/* ── AUDIO ENGINE ────────────────────────────────── */
 const AC = new (window.AudioContext || window.webkitAudioContext)();
 
-function playTone(freq, duration, type="sine", vol=0.18){
-  const osc = AC.createOscillator();
-  const gain = AC.createGain();
-  osc.connect(gain);
-  gain.connect(AC.destination);
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, AC.currentTime);
-  gain.gain.setValueAtTime(vol, AC.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + duration);
-  osc.start(AC.currentTime);
-  osc.stop(AC.currentTime + duration);
+function tone(freq, dur, type="sine", vol=0.15){
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.connect(g); g.connect(AC.destination);
+  o.type = type;
+  o.frequency.setValueAtTime(freq, AC.currentTime);
+  g.gain.setValueAtTime(vol, AC.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + dur);
+  o.start(); o.stop(AC.currentTime + dur);
 }
 
-function sfxCheck(){
-  // two rising notes — satisfying
-  playTone(520, 0.08);
-  setTimeout(()=> playTone(780, 0.12), 80);
-}
+const sfx = {
+  check()  { tone(520,.08); setTimeout(()=>tone(780,.12),80); },
+  uncheck(){ tone(380,.10,"sawtooth",.10); },
+  allDone(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.25,"sine",.14),i*80)); },
+  levelUp(){ [440,550,660,880].forEach((f,i)=>setTimeout(()=>tone(f,.2,"triangle",.18),i*100)); },
+  timer()  { [880,1100].forEach((f,i)=>setTimeout(()=>tone(f,.15),i*120)); },
+  add()    { tone(600,.08,"sine",.1); },
+  del()    { tone(300,.1,"sawtooth",.08); },
+};
 
-function sfxUncheck(){
-  playTone(400, 0.1, "sawtooth", 0.1);
-}
+document.addEventListener("touchstart", ()=>AC.resume(), {once:true});
+document.addEventListener("click",      ()=>AC.resume(), {once:true});
 
-function sfxAllDone(){
-  // triumphant chord sequence
-  [523, 659, 784, 1047].forEach((f, i) => {
-    setTimeout(()=> playTone(f, 0.25, "sine", 0.15), i * 80);
-  });
-}
+/* ── HAPTICS ─────────────────────────────────────── */
+const vib = p => navigator.vibrate && navigator.vibrate(p);
 
-function sfxLevelUp(){
-  [440, 550, 660, 880].forEach((f, i) => {
-    setTimeout(()=> playTone(f, 0.2, "triangle", 0.2), i * 100);
-  });
-}
-
-// Resume AudioContext on first touch (iOS requirement)
-document.addEventListener("touchstart", ()=> AC.resume(), { once:true });
-document.addEventListener("click",      ()=> AC.resume(), { once:true });
-
-/* ── HAPTICS ────────────────────────────────── */
-function vibrate(pattern){ if(navigator.vibrate) navigator.vibrate(pattern); }
-
-/* ── POPUP ──────────────────────────────────── */
+/* ── POPUP ───────────────────────────────────────── */
 const popupEl = document.getElementById("popup");
-
-function showPopup(text, positive=true){
+function popup(text, positive=true){
   popupEl.textContent = text;
   popupEl.style.background = positive ? "rgba(212,175,55,0.95)" : "rgba(255,60,60,0.9)";
   popupEl.style.color = positive ? "#000" : "#fff";
   popupEl.classList.remove("show");
-  void popupEl.offsetWidth; // reflow trick to restart animation
+  void popupEl.offsetWidth;
   popupEl.classList.add("show");
 }
 
-/* ── RENDER ENGINE ──────────────────────────── */
-function persist(){
-  save("h-xp", xp);
-  save("h-streak", streak);
-  save("h-done", done);
+/* ── COMPUTED ────────────────────────────────────── */
+function getLevel(){ return Math.floor(state.xp / XP_PER_LEVEL) + 1; }
+function getProgress(){ return state.xp % XP_PER_LEVEL; }
+function getCompleted(){ return Object.values(state.done).filter(Boolean).length; }
+function getScore(){
+  const t = state.tasks.length;
+  return t > 0 ? Math.round((getCompleted() / t) * 100) : 0;
 }
 
-function render(){
-  persist();
-
-  const level    = Math.floor(xp / XP_PER_LEVEL) + 1;
-  const progress = xp % XP_PER_LEVEL;
-  const pct      = (progress / XP_PER_LEVEL) * 100;
-  const title    = LEVEL_TITLES[Math.min(level-1, LEVEL_TITLES.length-1)];
-  const completed = Object.values(done).filter(Boolean).length;
-  const allDone  = completed === TASKS.length;
-
-  // Hero
-  document.getElementById("levelNum").textContent   = `LEVEL ${level}`;
-  document.getElementById("levelTitle").textContent = title;
-  document.getElementById("streakDays").textContent = `${streak} يوم`;
-  document.getElementById("xpLeft").textContent     = `XP: ${xp}`;
-  document.getElementById("xpRight").textContent    = `${progress} / ${XP_PER_LEVEL}`;
-
-  const fill = document.getElementById("xpFill");
-  fill.style.width = pct + "%";
-  fill.className   = allDone ? "fill shimmer" : "fill";
-
-  // Status card
-  const statusEl = document.getElementById("status");
-  const countEl  = document.getElementById("statusCount");
-  const warnEl   = document.getElementById("statusWarn");
-
-  if(allDone){
-    statusEl.className = "status all-done";
-    statusEl.innerHTML = `<div class="status-done-title">✦ أتممت يومك كاملاً</div><div class="status-done-sub">+30 XP مكافأة مكتسبة</div>`;
-  } else {
-    statusEl.className = "status";
-    statusEl.innerHTML = `
-      <div class="status-label">التقدم اليوم</div>
-      <div class="status-count" id="statusCount">${completed} / ${TASKS.length}</div>
-      <div class="status-warn" id="statusWarn">${completed===0 ? "⚠️ إذا لم تُكمل اليوم ستخسر 20 XP غداً" : ""}</div>
-    `;
+/* ── WEEK DAYS ───────────────────────────────────── */
+function getWeekDays(){
+  const days = [];
+  const names = ["أحد","اثن","ثلث","أرب","خمس","جمع","سبت"];
+  for(let i=6; i>=0; i--){
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toDateString();
+    const isToday = key === today;
+    const hist = state.history[key];
+    const score = isToday ? getScore() : (hist ? hist.score : null);
+    days.push({ key, name: names[d.getDay()], score, isToday });
   }
-
-  // Quote
-  const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-  document.getElementById("quote").textContent = `"${q}"`;
+  return days;
 }
 
-/* ── BUILD TASK LIST ────────────────────────── */
-function buildTasks(){
-  const list = document.getElementById("taskList");
-  list.innerHTML = "";
+/* ══════════════════════════════════════════════════
+   FOCUS TIMER STATE
+══════════════════════════════════════════════════ */
+let timer = {
+  running: false,
+  seconds: POMODORO_SEC,
+  total:   POMODORO_SEC,
+  taskId:  null,
+  interval: null,
+};
 
-  TASKS.forEach(task => {
-    const row = document.createElement("div");
-    row.className = "task" + (done[task.id] ? " done" : "");
-    row.dataset.id = task.id;
-
-    row.innerHTML = `
-      <div class="chk ${done[task.id] ? 'on' : ''}" id="chk-${task.id}">
-        ${done[task.id] ? `<svg width="12" height="10" viewBox="0 0 12 10" fill="none">
-          <path d="M1 5L4.5 8.5L11 1" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>` : ""}
-      </div>
-      <span class="task-icon">${task.icon}</span>
-      <span class="task-label">${task.label}</span>
-      <span class="task-xp">+20</span>
-    `;
-
-    // Press animation
-    row.addEventListener("pointerdown", ()=> row.classList.add("pressed"));
-    row.addEventListener("pointerup",   ()=> row.classList.remove("pressed"));
-    row.addEventListener("pointerleave",()=> row.classList.remove("pressed"));
-
-    row.addEventListener("click", ()=> toggleTask(task.id));
-    list.appendChild(row);
-  });
-}
-
-/* ── TOGGLE LOGIC ───────────────────────────── */
-function toggleTask(id){
-  AC.resume(); // ensure AudioContext active
-
-  const prevLevel = Math.floor(xp / XP_PER_LEVEL) + 1;
-  const wasChecked = done[id];
-
-  done[id] = !wasChecked;
-
-  const completed = Object.values(done).filter(Boolean).length;
-
-  if(!wasChecked){
-    // CHECKING
-    vibrate([40]);
-    sfxCheck();
-    xp += XP_TASK;
-
-    if(completed === TASKS.length){
-      xp += XP_BONUS;
-      showPopup(`+${XP_TASK + XP_BONUS} XP 🎉`);
-      setTimeout(sfxAllDone, 100);
-      vibrate([40, 30, 60]);
-    } else {
-      showPopup(`+${XP_TASK} XP`);
+function startTimer(taskId){
+  if(timer.running) return;
+  timer.taskId  = taskId;
+  timer.running = true;
+  timer.interval = setInterval(()=>{
+    timer.seconds--;
+    if(timer.seconds <= 0){
+      clearInterval(timer.interval);
+      timer.running  = false;
+      timer.seconds  = POMODORO_SEC;
+      sfx.timer();
+      vib([100,50,100]);
+      popup("⏱️ انتهى الفوكس! +20 XP");
+      // auto-check the task
+      if(timer.taskId && !state.done[timer.taskId]){
+        state.done[timer.taskId] = true;
+        state.xp += XP_TASK;
+        persist();
+      }
+      timer.taskId = null;
     }
-  } else {
-    // UNCHECKING
-    vibrate([20]);
-    sfxUncheck();
-    xp = Math.max(0, xp + XP_UNDO);
-    showPopup(`${XP_UNDO} XP`, false);
-  }
-
-  // Level up?
-  const newLevel = Math.floor(xp / XP_PER_LEVEL) + 1;
-  if(newLevel > prevLevel){
-    setTimeout(()=>{
-      sfxLevelUp();
-      vibrate([60, 40, 80]);
-    }, 300);
-  }
-
-  buildTasks();
-  render();
+    renderTimer();
+  }, 1000);
+  renderTimer();
 }
 
-/* ── INIT ───────────────────────────────────── */
-buildTasks();
-render();
-</script>
-</body>
-</html>
+function stopTimer(){
+  clearInterval(timer.interval);
+  timer.running = false;
+  timer.seconds = POMODORO_SEC;
+  timer.taskId  = null;
+  renderTimer();
+}
+
+function formatTime(s){
+  const m = String(Math.floor(s/60)).padStart(2,"0");
+  const sec = String(s%60).padStart(2,"0");
+  return `${m}:${sec}`;
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER FUNCTIONS
+══════════════════════════════════════════════════ */
+
+/* ── RENDER HERO ─────────────────────────────────── */
+function renderHero(){
+  const level    = getLevel();
+  const progress = getProgress();
+  const pct      = (progress / XP_PER_LEV
