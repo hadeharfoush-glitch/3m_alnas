@@ -3,48 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hadi | The System</title>
+    <title>Hadi | Gold System</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #050505;
-            --card-bg: rgba(25, 25, 35, 0.6);
-            --accent: #4a6fa5;
-            --success: #7ec8a0;
-            --text-main: #e8e4d9;
+            --bg: #030303;
+            --card-bg: rgba(20, 20, 22, 0.7);
+            --gold-main: #D4AF37;
+            --gold-light: #F9E596;
+            --gold-dark: #AA771C;
+            --text-main: #F2F2F2;
             --text-dim: #888;
-            --ios-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+            /* استدعاء خط الآيفون الرسمي (SF Pro) مع بديل فخم */
+            --ios-font: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Alexandria", sans-serif;
         }
         body {
             margin: 0;
             background: var(--bg);
-            background-image: radial-gradient(circle at top right, #1a1a2e 0%, #050505 50%);
+            background-image: radial-gradient(circle at top right, #1a1710 0%, #030303 60%);
             color: var(--text-main);
-            font-family: 'IBM Plex Sans Arabic', var(--ios-font);
+            font-family: var(--ios-font);
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
+            padding-bottom: 50px;
         }
         .glass {
             background: var(--card-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.1);
             border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .task-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             touch-action: manipulation;
         }
         .task-card:active { transform: scale(0.97); }
-        .progress-bar-inner {
-            transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+        .gold-gradient-text {
+            background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold-main), var(--gold-dark));
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-family: var(--ios-font);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn-gold:active { transform: scale(0.95); }
+        input, textarea {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: var(--text-main);
+            border-radius: 12px;
+            padding: 15px;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: var(--ios-font);
+            outline: none;
+            resize: none;
+        }
+        input:focus, textarea:focus { border-color: var(--gold-main); }
+        .day-circle {
+            width: 35px; height: 35px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .day-active {
+            background: linear-gradient(135deg, var(--gold-main), var(--gold-dark));
+            color: #000; border: none;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
         }
     </style>
 </head>
@@ -52,88 +91,143 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect } = React;
-        const QUOTES = [
-            "خُـلـقـنـا لـ نَـتـرك أثـراً.",
-            "تعلقتُ بشمسٍ؛ كانت لغيري مطلعاً، ولي مغيباً.",
-            "العمق ليس في الكلمات، بل في الأثر الذي تتركه.",
-            "الانضباط هو الجسر بين الأهداف والإنجاز.",
-            "أنت سيد قرارك، ومستقبلك يبدأ من روتينك الآن."
-        ];
+
         const ROUTINE = [
             { id: 'morning', title: "بداية الأثر", time: "07:30", tasks: [
                 { id: "water", label: "ارتواء (ماء)", icon: "💧" },
-                { id: "hifz", label: "الحفظ الديني", icon: "📖" },
-                { id: "breakfast", label: "تغذية", icon: "🍳" },
-                { id: "fifa", label: "مكافأة فيفا", icon: "🎮" }
+                { id: "hifz", label: "الحفظ الديني", icon: "📖" }
             ]},
-            { id: 'focus', title: "ساعات العمل", time: "10:00", tasks: [
-                { id: "work", label: "فريلانس / كوبي رايتينج", icon: "💼" },
-                { id: "youtube", label: "إدارة القنوات / مستقل", icon: "🎬" },
+            { id: 'focus', title: "ساعات العمل (القمة)", time: "10:00", tasks: [
+                { id: "work", label: "دراسة الكوبي رايتينج", icon: "💼" },
+                { id: "youtube", label: "مشاريع مستقل / العملاء", icon: "🎬" },
                 { id: "exercise", label: "تفريغ طاقة (رياضة)", icon: "⚽" }
             ]},
             { id: 'night', title: "مراجعة الصمت", time: "21:00", tasks: [
-                { id: "journal", label: "خاطرة اليوم", icon: "✍️" },
-                { id: "priority", label: "هدف الغد الوحيد", icon: "🎯" },
                 { id: "read", label: "قراءة عميقة", icon: "📚" },
                 { id: "off", label: "الهروب من الشاشة (📵)", icon: "📵" }
             ]}
         ];
+
+        const DAYS = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+
         function App() {
             const [checked, setChecked] = useState({});
-            const [streak, setStreak] = useState(0);
-            const [quote] = useState(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+            const [score, setScore] = useState(0);
+            const [notes, setNotes] = useState('');
+            const [timeLeft, setTimeLeft] = useState(45 * 60); // 45 minutes
+            const [timerActive, setTimerActive] = useState(false);
+            const [history, setHistory] = useState([]);
+
             useEffect(() => {
-                const saved = localStorage.getItem('hadi-pro-v2');
-                if (saved) setChecked(JSON.parse(saved));
-                setStreak(Number(localStorage.getItem('hadi-streak')) || 0);
+                const savedChecked = localStorage.getItem('hadi-tasks');
+                const savedScore = localStorage.getItem('hadi-score');
+                const savedNotes = localStorage.getItem('hadi-notes');
+                const savedHistory = localStorage.getItem('hadi-history');
+                
+                if (savedChecked) setChecked(JSON.parse(savedChecked));
+                if (savedScore) setScore(Number(savedScore));
+                if (savedNotes) setNotes(savedNotes);
+                if (savedHistory) setHistory(JSON.parse(savedHistory));
             }, []);
-            const toggle = (id) => {
+
+            // Timer Logic
+            useEffect(() => {
+                let interval = null;
+                if (timerActive && timeLeft > 0) {
+                    interval = setInterval(() => {
+                        setTimeLeft(timeLeft => timeLeft - 1);
+                    }, 1000);
+                } else if (timeLeft === 0) {
+                    setTimerActive(false);
+                    const newScore = score + 50; // مكافأة الانغماس
+                    setScore(newScore);
+                    localStorage.setItem('hadi-score', newScore);
+                    alert("عاش! جلسة التركيز انتهت وتمت إضافة 50 نقطة لسكورك. 🔥");
+                    setTimeLeft(45 * 60);
+                }
+                return () => clearInterval(interval);
+            }, [timerActive, timeLeft, score]);
+
+            const toggleTask = (id) => {
                 const updated = { ...checked, [id]: !checked[id] };
                 setChecked(updated);
-                localStorage.setItem('hadi-pro-v2', JSON.stringify(updated));
-                const totalTasks = ROUTINE.flatMap(r => r.tasks).length;
-                const doneCount = Object.values(updated).filter(Boolean).length;
-                if (doneCount === totalTasks) {
-                   const newStreak = streak + 1;
-                   setStreak(newStreak);
-                   localStorage.setItem('hadi-streak', newStreak);
+                localStorage.setItem('hadi-tasks', JSON.stringify(updated));
+                
+                if (updated[id]) {
+                    const newScore = score + 10;
+                    setScore(newScore);
+                    localStorage.setItem('hadi-score', newScore);
                 }
             };
-            const totalTasks = ROUTINE.flatMap(r => r.tasks).length;
-            const doneCount = Object.values(checked).filter(Boolean).length;
-            const progress = Math.round((doneCount / totalTasks) * 100);
-            const getLevel = () => {
-                if (streak < 5) return "مبتدئ طموح";
-                if (streak < 15) return "ملتزم محترف";
-                return "سيد الانضباط";
+
+            const toggleTimer = () => setTimerActive(!timerActive);
+            
+            const formatTime = (seconds) => {
+                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const s = (seconds % 60).toString().padStart(2, '0');
+                return `${m}:${s}`;
             };
+
+            const saveNote = (e) => {
+                setNotes(e.target.value);
+                localStorage.setItem('hadi-notes', e.target.value);
+            };
+
+            const currentDayIndex = new Date().getDay();
+
             return (
                 <div style={{ padding: '30px 20px', maxWidth: '500px', margin: '0 auto', animation: 'fadeIn 0.8s ease-out' }}>
-                    <header style={{ marginBottom: '40px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                            <h1 style={{ fontSize: '26px', fontWeight: '700', letterSpacing: '-1px' }}>طابت أيامك يا هادي</h1>
-                            <div className="glass" style={{ padding: '5px 15px', fontSize: '12px', color: '#7ec8a0' }}>{getLevel()}</div>
+                    
+                    {/* Header */}
+                    <header style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <h1 className="gold-gradient-text" style={{ fontSize: '28px', fontWeight: '700', margin: '0 0 5px 0', letterSpacing: '-0.5px' }}>
+                                مرحباً، هادي.
+                            </h1>
+                            <p style={{ color: 'var(--text-dim)', fontSize: '13px', margin: 0 }}>النظام يعمل بكفاءة.</p>
                         </div>
-                        <p style={{ color: '#888', fontSize: '14px', fontStyle: 'italic' }}>"{quote}"</p>
+                        <div className="glass" style={{ padding: '10px 20px', textAlign: 'center', borderColor: 'var(--gold-dark)' }}>
+                            <div style={{ fontSize: '10px', color: 'var(--gold-light)' }}>السكور العام</div>
+                            <div style={{ fontSize: '22px', fontWeight: '700', color: '#fff' }}>{score}</div>
+                        </div>
                     </header>
-                    <div className="glass" style={{ padding: '20px', marginBottom: '35px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', textTransform: 'uppercase' }}>تقدم اليوم</div>
-                        <div style={{ fontSize: '32px', fontWeight: '700', marginBottom: '15px' }}>{progress}%</div>
-                        <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
-                            <div className="progress-bar-inner" style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #4a6fa5, #7ec8a0)' }}></div>
+
+                    {/* Calendar / Weekly Tracker */}
+                    <div className="glass" style={{ padding: '20px', marginBottom: '30px' }}>
+                        <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '15px' }}>التزام الأسبوع</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            {DAYS.map((day, idx) => (
+                                <div key={idx} className={`day-circle ${idx === currentDayIndex ? 'day-active' : ''}`}>
+                                    {day.charAt(0)}
+                                </div>
+                            ))}
                         </div>
-                        <div style={{ marginTop: '15px', fontSize: '13px' }}>🔥 ستريك الانضباط: <span style={{ color: '#7ec8a0', fontWeight: 'bold' }}>{streak} أيام</span></div>
                     </div>
+
+                    {/* Deep Work Timer */}
+                    <div className="glass" style={{ padding: '30px 20px', marginBottom: '30px', textAlign: 'center', background: 'linear-gradient(180deg, rgba(20,20,22,0.8) 0%, rgba(30,25,10,0.6) 100%)' }}>
+                        <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '5px', color: 'var(--gold-light)' }}>جلسة التركيز العميق</h2>
+                        <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '20px' }}>للكتابة وصناعة المحتوى (45 دقيقة)</p>
+                        <div style={{ fontSize: '48px', fontWeight: '700', letterSpacing: '2px', marginBottom: '25px', fontFamily: 'monospace' }}>
+                            {formatTime(timeLeft)}
+                        </div>
+                        <button className="btn-gold" onClick={toggleTimer} style={{ width: '100%' }}>
+                            {timerActive ? 'إيقاف مؤقت ⏸' : 'بدء الجلسة ▶'}
+                        </button>
+                    </div>
+
+                    {/* Routine */}
                     {ROUTINE.map((block) => (
                         <div key={block.id} style={{ marginBottom: '35px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4a6fa5' }}></div>
+                                <div style={{ width: '4px', height: '15px', background: 'var(--gold-main)', borderRadius: '2px' }}></div>
                                 <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>{block.title}</h2>
-                                <span style={{ fontSize: '12px', color: '#888' }}>{block.time}</span>
+                                <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{block.time}</span>
                             </div>
+
                             {block.tasks.map(task => (
                                 <div key={task.id} 
-                                     onClick={() => toggle(task.id)}
+                                     onClick={() => toggleTask(task.id)}
                                      className="glass task-card" 
                                      style={{ 
                                         padding: '18px', 
@@ -141,29 +235,45 @@
                                         display: 'flex', 
                                         alignItems: 'center', 
                                         gap: '15px',
-                                        opacity: checked[task.id] ? 0.6 : 1,
-                                        borderRight: checked[task.id] ? `4px solid #7ec8a0` : '1px solid rgba(255,255,255,0.05)'
+                                        opacity: checked[task.id] ? 0.5 : 1,
+                                        borderRight: checked[task.id] ? `4px solid var(--gold-main)` : '1px solid rgba(212, 175, 55, 0.1)'
                                      }}>
                                     <div style={{ 
-                                        width: '24px', height: '24px', borderRadius: '50%', 
-                                        border: '2px solid rgba(255,255,255,0.1)',
+                                        width: '24px', height: '24px', borderRadius: '8px', 
+                                        border: checked[task.id] ? 'none' : '2px solid rgba(255,255,255,0.1)',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        background: checked[task.id] ? '#7ec8a0' : 'transparent'
+                                        background: checked[task.id] ? 'var(--gold-main)' : 'transparent'
                                     }}>
-                                        {checked[task.id] && <span style={{ color: '#000', fontSize: '14px', fontWeight: 'bold' }}>✓</span>}
+                                        {checked[task.id] && <span style={{ color: '#000', fontSize: '16px', fontWeight: 'bold' }}>✓</span>}
                                     </div>
                                     <span style={{ fontSize: '20px' }}>{task.icon}</span>
-                                    <span style={{ fontSize: '15px', textDecoration: checked[task.id] ? 'line-through' : 'none' }}>{task.label}</span>
+                                    <span style={{ fontSize: '15px', fontWeight: '600', textDecoration: checked[task.id] ? 'line-through' : 'none' }}>{task.label}</span>
                                 </div>
                             ))}
                         </div>
                     ))}
-                    <footer style={{ textAlign: 'center', marginTop: '50px', color: '#888', fontSize: '11px' }}>
-                        نظام الانضباط الشخصي - نسخة هادي حرفوش
+
+                    {/* Spark Pad */}
+                    <div style={{ marginTop: '40px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                            <div style={{ width: '4px', height: '15px', background: 'var(--gold-main)', borderRadius: '2px' }}></div>
+                            <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>الخاطرة والأفكار</h2>
+                        </div>
+                        <textarea 
+                            rows="4" 
+                            placeholder="اكتب هنا أي فكرة تخطر لك، خطة فيديو، أو اقتباس..."
+                            value={notes}
+                            onChange={saveNote}
+                        ></textarea>
+                    </div>
+
+                    <footer style={{ textAlign: 'center', marginTop: '60px', color: 'var(--text-dim)', fontSize: '11px', letterSpacing: '1px' }}>
+                        HADI HARFOUSH | GOLD EDITION
                     </footer>
                 </div>
             );
         }
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
