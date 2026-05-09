@@ -518,3 +518,231 @@ const FALLBACK_QUOTES = [
   {q:"التكرار يصنع الأسطورة.",a:"مجهول"},
   {q:"من لا يتعب لا يفرح.",a:"مجهول"},
   {q:"النجاح ليس
+function renderTasks(){
+  const list=document.getElementById("r-tasks");
+  list.innerHTML="";
+  st.tasks.forEach(task=>{
+    const row=document.createElement("div");
+    row.className="task"+(st.done[task.id]?" done-task":"");
+    row.innerHTML=`
+      <div class="chk ${st.done[task.id]?"on":""}">
+        ${st.done[task.id]?`<svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+          <path d="M1 4.5L4 7.5L10 1" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`:""}
+      </div>
+      <span class="task-icon">${task.icon}</span>
+      <span class="task-label">${task.label}</span>
+      <span class="task-xp">+20</span>
+      <button class="del-btn" data-del="${task.id}">×</button>
+    `;
+    row.addEventListener("pointerdown",()=>row.classList.add("pressed"));
+    row.addEventListener("pointerup",  ()=>row.classList.remove("pressed"));
+    row.addEventListener("pointerleave",()=>row.classList.remove("pressed"));
+    row.addEventListener("click",e=>{
+      if(e.target.closest("[data-del]")) return;
+      AC.resume(); toggleTask(task.id);
+    });
+    row.querySelector("[data-del]").addEventListener("click",e=>{
+      e.stopPropagation(); AC.resume(); sfx.del(); vib([20]);
+      st.tasks=st.tasks.filter(t=>t.id!==task.id);
+      delete st.done[task.id];
+      persist(); renderAll();
+    });
+    list.appendChild(row);
+  });
+}
+
+function renderStatus(){
+  const el=document.getElementById("r-status");
+  const c=getCompleted(), t=st.tasks.length, allDone=c===t&&t>0;
+  if(allDone){
+    el.className="card status-card all-done";
+    el.innerHTML=`<div style="font-size:24px;margin-bottom:8px">✦</div>
+      <div style="color:var(--gold);font-size:15px;font-weight:500">أتممت يومك كاملاً</div>
+      <div class="score-sub">+30 XP مكافأة • الـ Streak ارتفع 🔥</div>`;
+  } else {
+    el.className="card status-card";
+    el.innerHTML=`
+      <div class="score-big">${getScore()}%</div>
+      <div class="score-sub">${c} من ${t} مهام مكتملة</div>
+      ${c===0?'<div class="status-warn">⚠️ إذا لم تُكمل شيئاً ستخسر 20 XP غداً</div>':""}
+    `;
+  }
+}
+
+function renderWeek(){
+  const wrap=document.getElementById("r-week");
+  wrap.innerHTML="";
+  getWeekDays().forEach(day=>{
+    let cls="day-cell";
+    if(day.isToday) cls+=" today";
+    if(day.score===100) cls+=" full";
+    else if(day.score>0) cls+=" partial";
+    const div=document.createElement("div");
+    div.className=cls;
+    div.innerHTML=`<span class="dn">${day.name}</span><span class="ds">${day.score!==null?day.score+"%":"—"}</span>`;
+    wrap.appendChild(div);
+  });
+}
+
+function renderBoss(){
+  const pct=(st.bossProgress/BOSS_TARGET)*100;
+  document.getElementById("r-boss-fill").style.width=pct+"%";
+  const badge=document.getElementById("r-boss-badge");
+  badge.textContent=st.bossProgress>=BOSS_TARGET?"✓ مهزوم!":"جارٍ...";
+  badge.style.color=st.bossProgress>=BOSS_TARGET?"#4ade80":"#f08080";
+  document.getElementById("r-boss-meta").innerHTML=
+    `<span>${st.bossProgress} / ${BOSS_TARGET} أيام</span><span>${Math.round(pct)}%</span>`;
+}
+
+function renderTimer(){
+  const CIRC=2*Math.PI*82;
+  const ring=document.getElementById("r-ring");
+  ring.style.strokeDasharray =CIRC;
+  ring.style.strokeDashoffset=CIRC*(1-tmr.seconds/tmr.total);
+  document.getElementById("r-ttime").textContent=fmtTime(tmr.seconds);
+  document.getElementById("r-tlbl").textContent=tmr.taskId
+    ?(st.tasks.find(t=>t.id===tmr.taskId)?.label||""):"اختر مهمة للبدء";
+  const btn=document.getElementById("r-tstart");
+  btn.textContent=tmr.running?"إيقاف":"بدء";
+  btn.className=tmr.running?"tbtn":"tbtn primary";
+}
+
+function renderPicks(){
+  const wrap=document.getElementById("r-picks");
+  wrap.innerHTML="";
+  st.tasks.forEach(task=>{
+    const chip=document.createElement("div");
+    chip.className="pick-chip"+(tmr.taskId===task.id?" active":"");
+    chip.textContent=`${task.icon} ${task.label}`;
+    chip.addEventListener("click",()=>{
+      if(tmr.running) return;
+      AC.resume();
+      tmr.taskId=tmr.taskId===task.id?null:task.id;
+      renderPicks(); renderTimer();
+    });
+    wrap.appendChild(chip);
+  });
+}
+
+function renderJournal(){
+  document.getElementById("r-jdate").textContent=today;
+  document.getElementById("r-journal").value=st.journal[today]||"";
+  const hist=document.getElementById("r-jhist");
+  hist.innerHTML="";
+  const entries=Object.entries(st.journal)
+    .filter(([k])=>k!==today)
+    .sort((a,b)=>new Date(b[0])-new Date(a[0]))
+    .slice(0,5);
+  if(!entries.length){
+    hist.innerHTML=`<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px">لا يوجد سجل بعد</div>`;
+    return;
+  }
+  entries.forEach(([date,text])=>{
+    const div=document.createElement("div");
+    div.className="j-entry card";
+    div.innerHTML=`<div class="jd">${date}</div><div class="jt">${text}</div>`;
+    hist.appendChild(div);
+  });
+}
+
+function renderAll(){
+  renderHero();
+  renderTasks();
+  renderStatus();
+  renderWeek();
+  renderBoss();
+  renderTimer();
+  renderPicks();
+  renderJournal();
+}
+
+/* ══════════════════════════════════════════
+   TOGGLE TASK
+══════════════════════════════════════════ */
+function toggleTask(id){
+  const prevLvl=getLevel(), wasCheck=st.done[id];
+  st.done[id]=!wasCheck;
+  const c=getCompleted(), t=st.tasks.length;
+
+  if(!wasCheck){
+    vib([40]); sfx.check(); st.xp+=XP_TASK;
+    if(c===t){ st.xp+=XP_BONUS; sfx.allDone(); vib([40,30,60]); showPopup(`+${XP_TASK+XP_BONUS} XP 🎉`); }
+    else { showPopup(`+${XP_TASK} XP`); }
+  } else {
+    vib([20]); sfx.uncheck(); st.xp=Math.max(0,st.xp+XP_UNDO);
+    showPopup(`${XP_UNDO} XP`,false);
+  }
+
+  if(getLevel()>prevLvl) setTimeout(()=>{sfx.levelUp();vib([60,40,80]);},300);
+  persist(); renderAll();
+}
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════ */
+document.querySelectorAll(".nav-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const target=btn.dataset.screen;
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+    document.getElementById(target).classList.add("active");
+    btn.classList.add("active");
+  });
+});
+
+/* ══════════════════════════════════════════
+   EVENT LISTENERS
+══════════════════════════════════════════ */
+
+// Add task button
+document.getElementById("r-add-btn").addEventListener("click",()=>{
+  AC.resume();
+  const inp=document.getElementById("r-add-input");
+  const val=inp.value.trim(); if(!val) return;
+  sfx.add(); vib([30]);
+  const icons=["⭐","🎯","💡","🔑","🚀","✏️","🧠","💪","🎨","📝"];
+  st.tasks.push({id:Date.now().toString(), label:val, icon:icons[Math.floor(Math.random()*icons.length)]});
+  inp.value="";
+  persist(); renderAll();
+});
+
+document.getElementById("r-add-input").addEventListener("keydown",e=>{
+  if(e.key==="Enter") document.getElementById("r-add-btn").click();
+});
+
+// Timer controls
+document.getElementById("r-tstart").addEventListener("click",()=>{
+  AC.resume();
+  tmr.running ? stopTimer() : startTimer();
+});
+
+document.getElementById("r-treset").addEventListener("click",()=>{
+  AC.resume(); stopTimer();
+});
+
+// Journal autosave on every keystroke
+document.getElementById("r-journal").addEventListener("input",e=>{
+  st.journal[today]=e.target.value;
+  S.set("h-journal",st.journal);
+});
+
+/* ══════════════════════════════════════════
+   WELCOME SCREEN
+   Shows for 1.8s then fades out
+══════════════════════════════════════════ */
+setTimeout(()=>{
+  document.getElementById("welcome").classList.add("hide");
+  // Remove from DOM after fade finishes
+  setTimeout(()=>document.getElementById("welcome").remove(), 700);
+}, 1800);
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+setGreeting();
+loadQuote();   // async — updates quote card when API responds
+renderAll();
+</script>
+</body>
+</html>
