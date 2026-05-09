@@ -18,7 +18,6 @@
             --text-dim: #888;
             --ios-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
         }
-
         body {
             margin: 0;
             background: var(--bg);
@@ -28,7 +27,6 @@
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
-
         .glass {
             background: var(--card-bg);
             backdrop-filter: blur(15px);
@@ -36,18 +34,14 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 20px;
         }
-
         .task-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             touch-action: manipulation;
         }
-
         .task-card:active { transform: scale(0.97); }
-
         .progress-bar-inner {
             transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
         }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -56,10 +50,8 @@
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel">
         const { useState, useEffect } = React;
-
         const QUOTES = [
             "خُـلـقـنـا لـ نَـتـرك أثـراً.",
             "تعلقتُ بشمسٍ؛ كانت لغيري مطلعاً، ولي مغيباً.",
@@ -67,7 +59,6 @@
             "الانضباط هو الجسر بين الأهداف والإنجاز.",
             "أنت سيد قرارك، ومستقبلك يبدأ من روتينك الآن."
         ];
-
         const ROUTINE = [
             { id: 'morning', title: "بداية الأثر", time: "07:30", tasks: [
                 { id: "water", label: "ارتواء (ماء)", icon: "💧" },
@@ -76,8 +67,8 @@
                 { id: "fifa", label: "مكافأة فيفا", icon: "🎮" }
             ]},
             { id: 'focus', title: "ساعات العمل", time: "10:00", tasks: [
-                { id: "work", label: "فريلانس / كورس كوبي رايتينج", icon: "💼" },
-                { id: "youtube", label: "إدارة القنوات / مشاريع مستقل", icon: "🎬" },
+                { id: "work", label: "فريلانس / كوبي رايتينج", icon: "💼" },
+                { id: "youtube", label: "إدارة القنوات / مستقل", icon: "🎬" },
                 { id: "exercise", label: "تفريغ طاقة (رياضة)", icon: "⚽" }
             ]},
             { id: 'night', title: "مراجعة الصمت", time: "21:00", tasks: [
@@ -87,24 +78,19 @@
                 { id: "off", label: "الهروب من الشاشة (📵)", icon: "📵" }
             ]}
         ];
-
         function App() {
             const [checked, setChecked] = useState({});
             const [streak, setStreak] = useState(0);
             const [quote] = useState(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
-
             useEffect(() => {
-                const saved = localStorage.getItem('hadi-pro-v1');
+                const saved = localStorage.getItem('hadi-pro-v2');
                 if (saved) setChecked(JSON.parse(saved));
-                // حساب الستريك تقريبياً من الذاكرة
                 setStreak(Number(localStorage.getItem('hadi-streak')) || 0);
             }, []);
-
             const toggle = (id) => {
                 const updated = { ...checked, [id]: !checked[id] };
                 setChecked(updated);
-                localStorage.setItem('hadi-pro-v1', JSON.stringify(updated));
-                
+                localStorage.setItem('hadi-pro-v2', JSON.stringify(updated));
                 const totalTasks = ROUTINE.flatMap(r => r.tasks).length;
                 const doneCount = Object.values(updated).filter(Boolean).length;
                 if (doneCount === totalTasks) {
@@ -113,48 +99,38 @@
                    localStorage.setItem('hadi-streak', newStreak);
                 }
             };
-
             const totalTasks = ROUTINE.flatMap(r => r.tasks).length;
             const doneCount = Object.values(checked).filter(Boolean).length;
             const progress = Math.round((doneCount / totalTasks) * 100);
-
             const getLevel = () => {
                 if (streak < 5) return "مبتدئ طموح";
                 if (streak < 15) return "ملتزم محترف";
                 return "سيد الانضباط";
             };
-
             return (
                 <div style={{ padding: '30px 20px', maxWidth: '500px', margin: '0 auto', animation: 'fadeIn 0.8s ease-out' }}>
-                    
-                    {/* Header iPhone Style */}
                     <header style={{ marginBottom: '40px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                             <h1 style={{ fontSize: '26px', fontWeight: '700', letterSpacing: '-1px' }}>طابت أيامك يا هادي</h1>
-                            <div className="glass" style={{ padding: '5px 15px', fontSize: '12px', color: var(--success) }}>{getLevel()}</div>
+                            <div className="glass" style={{ padding: '5px 15px', fontSize: '12px', color: '#7ec8a0' }}>{getLevel()}</div>
                         </div>
-                        <p style={{ color: 'var(--text-dim)', fontSize: '14px', fontStyle: 'italic' }}>"{quote}"</p>
+                        <p style={{ color: '#888', fontSize: '14px', fontStyle: 'italic' }}>"{quote}"</p>
                     </header>
-
-                    {/* Level Card */}
                     <div className="glass" style={{ padding: '20px', marginBottom: '35px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px', textTransform: 'uppercase' }}>تقدم اليوم</div>
+                        <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', textTransform: 'uppercase' }}>تقدم اليوم</div>
                         <div style={{ fontSize: '32px', fontWeight: '700', marginBottom: '15px' }}>{progress}%</div>
                         <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
-                            <div className="progress-bar-inner" style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, var(--accent), var(--success))' }}></div>
+                            <div className="progress-bar-inner" style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #4a6fa5, #7ec8a0)' }}></div>
                         </div>
-                        <div style={{ marginTop: '15px', fontSize: '13px' }}>🔥 ستريك الحادي عشر: <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>{streak} أيام</span></div>
+                        <div style={{ marginTop: '15px', fontSize: '13px' }}>🔥 ستريك الانضباط: <span style={{ color: '#7ec8a0', fontWeight: 'bold' }}>{streak} أيام</span></div>
                     </div>
-
-                    {/* Routine Blocks */}
                     {ROUTINE.map((block) => (
                         <div key={block.id} style={{ marginBottom: '35px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)' }}></div>
+                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4a6fa5' }}></div>
                                 <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>{block.title}</h2>
-                                <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{block.time}</span>
+                                <span style={{ fontSize: '12px', color: '#888' }}>{block.time}</span>
                             </div>
-
                             {block.tasks.map(task => (
                                 <div key={task.id} 
                                      onClick={() => toggle(task.id)}
@@ -166,13 +142,13 @@
                                         alignItems: 'center', 
                                         gap: '15px',
                                         opacity: checked[task.id] ? 0.6 : 1,
-                                        borderRight: checked[task.id] ? `4px solid var(--success)` : '1px solid rgba(255,255,255,0.05)'
+                                        borderRight: checked[task.id] ? `4px solid #7ec8a0` : '1px solid rgba(255,255,255,0.05)'
                                      }}>
                                     <div style={{ 
                                         width: '24px', height: '24px', borderRadius: '50%', 
                                         border: '2px solid rgba(255,255,255,0.1)',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        background: checked[task.id] ? 'var(--success)' : 'transparent'
+                                        background: checked[task.id] ? '#7ec8a0' : 'transparent'
                                     }}>
                                         {checked[task.id] && <span style={{ color: '#000', fontSize: '14px', fontWeight: 'bold' }}>✓</span>}
                                     </div>
@@ -182,14 +158,12 @@
                             ))}
                         </div>
                     ))}
-
-                    <footer style={{ textAlign: 'center', marginTop: '50px', color: 'var(--text-dim)', fontSize: '11px' }}>
+                    <footer style={{ textAlign: 'center', marginTop: '50px', color: '#888', fontSize: '11px' }}>
                         نظام الانضباط الشخصي - نسخة هادي حرفوش
                     </footer>
                 </div>
             );
         }
-
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
