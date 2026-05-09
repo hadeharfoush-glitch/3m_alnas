@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>روتين هادي</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { margin: 0; background: #050505; font-family: sans-serif; color: #e8e4d9; }
+        /* سأضع لك التصميم هنا ليعمل الملف بشكل مستقل */
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const ROUTINE = [
+            { time: "7:30 - 8:00", period: "صباحاً", tasks: [{ id: "water", label: "كوب ماء", icon: "💧" }, { id: "hifz", label: "حفظ ديني", icon: "📖" }, { id: "breakfast", label: "فطور", icon: "🍳" }, { id: "fifa", label: "فيفا", icon: "🎮" }] },
+            { time: "10:00 - 12:00", period: "نهاراً", tasks: [{ id: "work", label: "شغل/كورس", icon: "💼" }, { id: "exercise", label: "رياضة", icon: "⚽" }] },
+            { time: "12:00 - 9:00", period: "بعد الظهر", tasks: [{ id: "free", label: "وقت حر", icon: "🌤️" }] },
+            { time: "9:00 - 10:00", period: "مساءً", tasks: [{ id: "journal", label: "يوميات", icon: "✍️" }, { id: "priority", label: "أولوية الغد", icon: "🎯" }, { id: "review", label: "مراجعة", icon: "🔄" }, { id: "read", label: "قراءة", icon: "📚" }, { id: "phone", label: "الموبايل بره", icon: "📵" }] }
+        ];
+
+        function App() {
+            const [checked, setChecked] = useState({});
+            const [note, setNote] = useState("");
+
+            useEffect(() => {
+                const saved = localStorage.getItem('hadi-routine');
+                if (saved) setChecked(JSON.parse(saved));
+            }, []);
+
+            const toggle = (id) => {
+                const updated = { ...checked, [id]: !checked[id] };
+                setChecked(updated);
+                localStorage.setItem('hadi-routine', JSON.stringify(updated));
+            };
+
+            const progress = Math.round((Object.values(checked).filter(Boolean).length / 12) * 100);
+
+            return (
+                <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>
+                    <header style={{ textAlign: 'center', marginBottom: '30px' }}>
+                        <h1>روتين هادي 🔥</h1>
+                        <div style={{ background: '#1a1a2e', height: '10px', borderRadius: '5px' }}>
+                            <div style={{ width: `${progress}%`, background: '#7ec8a0', height: '100%', borderRadius: '5px', transition: '0.5s' }}></div>
+                        </div>
+                    </header>
+                    {ROUTINE.map((block, i) => (
+                        <div key={i} style={{ marginBottom: '25px' }}>
+                            <h3 style={{ color: '#4a6fa5', borderBottom: '1px solid #1a1a2e' }}>{block.period} ({block.time})</h3>
+                            {block.tasks.map(task => (
+                                <div key={task.id} onClick={() => toggle(task.id)} style={{ 
+                                    padding: '15px', background: checked[task.id] ? '#0d1f16' : '#0f0f15', 
+                                    marginBottom: '8px', borderRadius: '10px', cursor: 'pointer', display: 'flex', gap: '10px'
+                                }}>
+                                    <span>{checked[task.id] ? '✅' : '⬜'}</span>
+                                    <span>{task.icon} {task.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
