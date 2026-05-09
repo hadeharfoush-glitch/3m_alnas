@@ -3,58 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hadi | Mastermind System</title>
+    <title>Hadi | The Monolith</title>
+    <!-- الروابط الأساسية لتشغيل React و Babel -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@200;400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@200;400;700&family=Playfair+Display:ital,wght@1,900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #D4AF37;
-            --gold-glow: rgba(212, 175, 55, 0.4);
-            --bg: #000;
-            --glass: rgba(255, 255, 255, 0.03);
+            --gold: #C5A059;
+            --deep-black: #050505;
+            --glass: rgba(255, 255, 255, 0.02);
+            /* خط الأيفون الرسمي مع البديل الراقي */
+            --ios-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Alexandria", sans-serif;
         }
+
         body {
-            margin: 0; background: var(--bg); color: #fff;
-            font-family: 'Alexandria', sans-serif; -webkit-font-smoothing: antialiased;
-            background-image: radial-gradient(circle at 50% 0%, #1a1608 0%, #000 80%);
+            margin: 0; background: var(--deep-black); color: #fff;
+            font-family: var(--ios-font); -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
-        .glass-panel {
-            background: var(--glass); backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 25px;
-            padding: 20px; margin-bottom: 20px;
+
+        .monolith-bg {
+            position: fixed; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at top right, #1a1508 0%, #050505 60%);
+            z-index: -1;
         }
-        .priority-card {
-            border: 1px solid var(--gold); box-shadow: 0 0 20px var(--gold-glow);
-            background: linear-gradient(135deg, rgba(212,175,55,0.05) 0%, rgba(0,0,0,0) 100%);
+
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(197, 160, 89, 0.08);
+            border-radius: 28px; padding: 25px; margin-bottom: 25px;
         }
-        .eng-clock { font-family: 'Playfair Display', serif; font-size: 55px; color: var(--gold); text-align: center; margin: 20px 0; }
-        .progress-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 10px; }
-        .progress-fill { height: 100%; background: var(--gold); box-shadow: 0 0 10px var(--gold); transition: 1s; }
-        .btn-check { width: 22px; height: 22px; border: 1px solid var(--gold); border-radius: 5px; cursor: pointer; }
-        .insight-box { border-right: 3px solid var(--gold); padding-right: 15px; font-style: italic; color: #ccc; font-size: 14px; }
+
+        .priority-glow {
+            border: 1px solid var(--gold);
+            box-shadow: 0 0 30px rgba(197, 160, 89, 0.15);
+            background: linear-gradient(135deg, rgba(197,160,89,0.05) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        .clock-eng {
+            font-family: 'Playfair Display', serif; font-size: 65px;
+            font-style: italic; color: var(--gold); line-height: 1;
+        }
+
+        .stat-label { font-size: 10px; color: #555; letter-spacing: 2px; text-transform: uppercase; }
+        
+        .habit-row {
+            display: flex; align-items: center; gap: 15px; padding: 18px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer;
+        }
+
+        .check-box {
+            width: 20px; height: 20px; border: 1.5px solid var(--gold);
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+        }
+
+        .ticker-wrap {
+            position: fixed; bottom: 0; width: 100%; background: #000;
+            padding: 8px 0; border-top: 1px solid rgba(197,160,89,0.1);
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .ticker-text {
+            white-space: nowrap; display: inline-block;
+            animation: marquee 20s linear infinite; font-size: 11px; color: var(--gold);
+        }
     </style>
 </head>
 <body>
+    <div class="monolith-bg"></div>
     <div id="root"></div>
+
     <script type="text/babel">
         const { useState, useEffect } = React;
 
         const INSIGHTS = [
-            "Copywriting Tip: العناوين هي 80% من نجاح المحتوى. ابدأ بفائدة قوية.",
-            "English Word: 'Resilience' تعني القدرة على التعافي بسرعة من الصعوبات.",
-            "Copywriting Tip: ركز على 'الفوائد' وليس فقط 'المميزات'.",
-            "English Word: 'Ambition' تعني الطموح، وهو وقود النجاح المستدام.",
-            "Copywriting Tip: استخدم أسلوب القصة (Storytelling) لجذب القارئ عاطفياً.",
-            "Smart Learning: أفضل طريقة للحفظ هي تعليم المعلومة لشخص آخر.",
-            "FC Mobile Tip: التوازن بين الدفاع والهجوم أهم من الـ OVR العالي وحده."
+            "Insight: Your content is your digital real estate. Build it wisely.",
+            "Strategy: Manager Mode victory requires balanced tactics, not just OVR.",
+            "Language: 'Exquisite' (راقي/نفيس) - use it to describe elite brands.",
+            "Routine: Habit building is the bridge between goals and accomplishment."
         ];
 
         function App() {
             const [time, setTime] = useState(new Date());
-            const [score, setScore] = useState(0);
-            const [day90, setDay90] = useState(42); // مثال: اليوم الـ 42
+            const [score, setScore] = useState(1220); // محاكاة لـ OVR 122
+            const [checked, setChecked] = useState({});
+            const [readingPages, setReadingPages] = useState(0);
 
             useEffect(() => {
                 const interval = setInterval(() => setTime(new Date()), 1000);
@@ -64,61 +104,76 @@
             const dailyInsight = INSIGHTS[time.getDate() % INSIGHTS.length];
 
             return (
-                <div style={{ padding: '40px 20px', maxWidth: '480px', margin: '0 auto' }}>
+                <div style={{ padding: '50px 25px 100px 25px', maxWidth: '480px', margin: '0 auto' }}>
                     
-                    {/* English Clock */}
-                    <div className="eng-clock">
-                        {time.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
-                    </div>
-
-                    {/* Elite Insight - معلومة اليوم المتغيرة */}
-                    <div className="glass-panel" style={{background: 'rgba(212,175,55,0.02)'}}>
-                        <div style={{fontSize: '10px', color: var(--gold), marginBottom: '8px', letterSpacing: '1px'}}>DAILY INSIGHT</div>
-                        <div className="insight-box">{dailyInsight}</div>
-                    </div>
-
-                    {/* Priority Habit - أهم عادة */}
-                    <div className="glass-panel priority-card">
-                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                            <div>
-                                <div style={{fontSize: '11px', color: var(--gold)}}>الأولوية القصوى اليوم</div>
-                                <div style={{fontSize: '17px', fontWeight: 'bold', marginTop: '5px'}}>إتقان ركيزة المحتوى التعليمي ✍️</div>
-                            </div>
-                            <div className="btn-check" style={{background: score > 0 ? var(--gold) : 'transparent'}}></div>
+                    {/* Header: Clock & Date */}
+                    <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                        <div className="clock-eng">
+                            {time.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#666', marginTop: '10px', letterSpacing: '3px' }}>
+                            {time.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                         </div>
                     </div>
 
-                    {/* 90-Day Tracker */}
-                    <div className="glass-panel">
-                        <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px'}}>
-                            <span>تحدي الـ 90 يوماً</span>
-                            <span style={{color: var(--gold)}}>Day {day90}/90</span>
-                        </div>
-                        <div className="progress-bar">
-                            <div className="progress-fill" style={{width: `${(day90/90)*100}%`}}></div>
+                    {/* Elite Insight Card */}
+                    <div className="glass-card" style={{ borderRight: '4px solid var(--gold)' }}>
+                        <div className="stat-label">System Intelligence</div>
+                        <div style={{ marginTop: '10px', fontSize: '15px', color: '#ccc', fontStyle: 'italic', lineHeight: '1.6' }}>
+                            "{dailyInsight}"
                         </div>
                     </div>
 
-                    {/* Habits Section */}
-                    <div style={{marginTop: '30px'}}>
-                        <h3 style={{fontSize: '14px', color: '#666', marginBottom: '15px'}}>الروتين الاستراتيجي</h3>
-                        <div className="glass-panel" style={{padding: '5px 15px'}}>
+                    {/* The Most Important Habit (Priority) */}
+                    <div className="glass-card priority-glow">
+                        <div className="stat-label" style={{ color: 'var(--gold)' }}>Main Objective Today</div>
+                        <div style={{ fontSize: '19px', fontWeight: 'bold', marginTop: '8px' }}>
+                            Mastering Content Pillars Strategy 🖋️
+                        </div>
+                    </div>
+
+                    {/* Reading Tracker */}
+                    <div className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <div className="stat-label">Reading Progress</div>
+                            <div style={{ fontSize: '16px', marginTop: '5px' }}>{readingPages} Pages Completed</div>
+                        </div>
+                        <button 
+                            onClick={() => setReadingPages(p => p + 1)}
+                            style={{ background: 'var(--gold)', border: 'none', borderRadius: '8px', padding: '10px 15px', color: '#000', fontWeight: '700' }}
+                        >+1</button>
+                    </div>
+
+                    {/* Routine Section */}
+                    <div style={{ marginTop: '40px' }}>
+                        <h3 className="stat-label" style={{ marginBottom: '20px' }}>Daily Strategic Routine</h3>
+                        <div className="glass-card" style={{ padding: '0 20px' }}>
                             {[
-                                {t: 'قراءة 20 صفحة (النمو)', i: '📚'},
-                                {t: 'تطوير تشكيلة FC Mobile', i: '⚽'},
-                                {t: 'كتابة خاطرة عميقة', i: '🖋️'}
-                            ].map((h, i) => (
-                                <div key={i} style={{display: 'flex', alignItems: 'center', gap: '15px', padding: '15px 0', borderBottom: i<2?'1px solid rgba(255,255,255,0.05)':'none'}}>
-                                    <div className="btn-check"></div>
-                                    <span style={{fontSize: '18px'}}>{h.i}</span>
-                                    <span style={{fontSize: '15px', flex: 1}}>{h.t}</span>
+                                { id: 'h1', t: 'Hifz & Religious Study', i: '📖' },
+                                { id: 'h2', t: 'FC Mobile Tactical Update', i: '⚽' },
+                                { id: 'h3', t: 'Freelance Pitching (Mustaqil)', i: '🎯' },
+                                { id: 'h4', t: 'English Language Immersion', i: '🌐' }
+                            ].map((habit) => (
+                                <div key={habit.id} className="habit-row" onClick={() => setChecked({...checked, [habit.id]: !checked[habit.id]})}>
+                                    <div className="check-box" style={{ background: checked[habit.id] ? 'var(--gold)' : 'transparent' }}>
+                                        {checked[habit.id] && <span style={{color: '#000', fontSize: '12px'}}>✓</span>}
+                                    </div>
+                                    <span style={{ fontSize: '15px', flex: 1, opacity: checked[habit.id] ? 0.3 : 1 }}>{habit.t}</span>
+                                    <span>{habit.i}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <footer style={{textAlign: 'center', marginTop: '50px', color: '#333', fontSize: '10px', letterSpacing: '4px'}}>
-                        HADI HARFOUSH | THE MASTERMIND
+                    {/* Tactical Ticker */}
+                    <div className="ticker-wrap">
+                        <div className="ticker-text">
+                            TARGET: REACH 122 OVR IN FC MOBILE • MASTERING 90-DAY DISCIPLINE • SYRIAN NATIONAL VALUES PROJECT • COPYRIGHTING CONTENT MAPS 2026
+                        </div>
+                    </div>
+
+                    <footer style={{ textAlign: 'center', marginTop: '40px', opacity: 0.3, fontSize: '9px', letterSpacing: '5px' }}>
+                        HADI HARFOUSH • THE MONOLITH V7
                     </footer>
                 </div>
             );
