@@ -1,263 +1,499 @@
-import { useState, useEffect } from "react";
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>HADI OS</title>
 
-const TASKS = [
-  { id: "1", t: "تمارين", icon: "⚽" },
-  { id: "2", t: "دراسة", icon: "📚" },
-  { id: "3", t: "إنجليزي", icon: "🌐" },
-  { id: "4", t: "مهارة", icon: "🛠️" },
-  { id: "5", t: "قراءة", icon: "📖" },
-];
+<style>
+/* ── RESET & BASE ─────────────────────────────── */
+*{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-const LEVEL_TITLES = [
-  "مبتدئ", "مثابر", "منضبط", "محترف", "أسطورة"
-];
+:root{
+  --gold: #D4AF37;
+  --gold2: #F0D060;
+  --bg: #000;
+  --card: rgba(255,255,255,0.04);
+  --border: rgba(212,175,55,0.18);
+  --red: #ff4d4d;
+}
 
-export default function HadiOS() {
-  const [done, setDone] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("hadi-done") || "{}"); }
-    catch { return {}; }
-  });
-  const [xp, setXp] = useState(() => Number(localStorage.getItem("hadi-xp") || 0));
-  const [streak, setStreak] = useState(() => Number(localStorage.getItem("hadi-streak") || 0));
-  const [last, setLast] = useState(() => localStorage.getItem("hadi-last") || "");
-  const [flash, setFlash] = useState(null); // "+20 XP" popup feedback
-  const [allDoneAnim, setAllDoneAnim] = useState(false);
+body{
+  background: var(--bg);
+  color: #fff;
+  /* iOS system font — SF Pro */
+  font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, "Segoe UI", Arial;
+  min-height: 100vh;
+  /* safe area for iPhone notch */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
 
-  const today = new Date().toDateString();
+/* ── LAYOUT ────────────────────────────────────── */
+.wrap{
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 28px 16px 40px;
+}
 
-  // ─── Day-change engine ───────────────────────────────────────────────
-  useEffect(() => {
-    if (last && last !== today) {
-      const completedYesterday = Object.values(done).filter(Boolean).length;
-      if (completedYesterday === 0) {
-        setXp(x => Math.max(0, x - 20));
-        setStreak(0);
-      } else if (completedYesterday === TASKS.length) {
-        setStreak(s => s + 1);
-      }
-      setDone({});
-    }
-    localStorage.setItem("hadi-last", today);
-  }, []);
+/* ── HERO CARD ─────────────────────────────────── */
+.hero{
+  background: linear-gradient(145deg, rgba(212,175,55,0.1), rgba(0,0,0,0.3));
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  padding: 22px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+  /* iOS spring feel */
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+}
 
-  // ─── Persist state ───────────────────────────────────────────────────
-  useEffect(() => {
-    localStorage.setItem("hadi-done", JSON.stringify(done));
-    localStorage.setItem("hadi-xp", xp);
-    localStorage.setItem("hadi-streak", streak);
-  }, [done, xp, streak]);
+.hero::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 80% 20%, rgba(212,175,55,0.07) 0%, transparent 60%);
+  pointer-events: none;
+}
 
-  // ─── Level calculation ───────────────────────────────────────────────
-  const XP_PER_LEVEL = 120;
-  const level = Math.floor(xp / XP_PER_LEVEL) + 1;
-  const progress = xp % XP_PER_LEVEL;
-  const levelTitle = LEVEL_TITLES[Math.min(level - 1, LEVEL_TITLES.length - 1)];
+.hero-top{ display:flex; justify-content:space-between; align-items:flex-start; }
 
-  // ─── Toggle task ─────────────────────────────────────────────────────
-  const toggle = (id) => {
-    if (navigator.vibrate) navigator.vibrate(40);
+.level-num{ font-size:32px; font-weight:200; color:var(--gold); letter-spacing:1px; }
+.level-title{ font-size:13px; color:var(--gold); opacity:0.6; margin-top:2px; }
 
-    setDone(prev => {
-      const next = { ...prev, [id]: !prev[id] };
-      const nowCompleted = Object.values(next).filter(Boolean).length;
+.streak-box{ text-align:center; }
+.streak-fire{ font-size:26px; display:block; }
+.streak-days{ font-size:12px; opacity:0.5; margin-top:2px; }
 
-      if (!prev[id]) {
-        // Checking a task: +20 XP, +30 bonus if all done
-        const bonus = nowCompleted === TASKS.length ? 30 : 0;
-        setXp(x => x + 20 + bonus);
-        setFlash(bonus > 0 ? "+50 XP 🎉" : "+20 XP");
-        if (nowCompleted === TASKS.length) setAllDoneAnim(true);
-      } else {
-        // Unchecking: -15 XP penalty
-        setXp(x => Math.max(0, x - 15));
-        setFlash("-15 XP");
-        setAllDoneAnim(false);
-      }
+.xp-row{ display:flex; justify-content:space-between; font-size:12px; opacity:0.5; margin:14px 0 6px; }
 
-      setTimeout(() => setFlash(null), 1200);
-      return next;
-    });
-  };
+/* XP bar */
+.bar{ height:7px; background:#111; border-radius:20px; overflow:hidden; }
+.fill{
+  height:100%;
+  background: var(--gold);
+  border-radius:20px;
+  transition: width 0.5s cubic-bezier(.34,1.56,.64,1);
+}
 
-  const completed = Object.values(done).filter(Boolean).length;
-  const allDone = completed === TASKS.length;
+/* ── TASKS CARD ─────────────────────────────────── */
+.tasks-card{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 4px 16px;
+  margin-bottom: 12px;
+}
 
-  return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#000",
-      color: "#fff",
-      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial",
-      direction: "rtl",
-      padding: "0",
-      position: "relative",
-    }}>
-      {/* XP Flash popup */}
-      {flash && (
-        <div style={{
-          position: "fixed",
-          top: 80,
-          left: "50%",
-          transform: "translateX(-50%)",
-          background: flash.startsWith("+") ? "rgba(212,175,55,0.95)" : "rgba(255,60,60,0.9)",
-          color: "#000",
-          fontWeight: 700,
-          fontSize: 16,
-          padding: "8px 20px",
-          borderRadius: 30,
-          zIndex: 100,
-          pointerEvents: "none",
-          animation: "fadeUp 1.2s ease forwards",
-        }}>
-          {flash}
-        </div>
-      )}
+.task{
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  cursor: pointer;
+  /* iOS spring */
+  transition: transform 0.15s cubic-bezier(.34,1.56,.64,1), opacity 0.25s;
+  user-select: none;
+}
 
-      <style>{`
-        @keyframes fadeUp {
-          0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
-          100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
-        }
-        @keyframes pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0.4); }
-          50% { box-shadow: 0 0 0 12px rgba(212,175,55,0); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
-      `}</style>
+.task:last-child{ border-bottom: none; }
 
-      <div style={{ maxWidth: 520, margin: "0 auto", padding: "20px 16px" }}>
+/* Pressed state via JS class */
+.task.pressed{ transform: scale(0.97); }
 
-        {/* ── HERO CARD ── */}
-        <div style={{
-          background: "linear-gradient(145deg, rgba(212,175,55,0.1), rgba(255,255,255,0.02))",
-          border: "1px solid rgba(212,175,55,0.25)",
-          borderRadius: 22,
-          padding: "20px 22px",
-          marginBottom: 14,
-          animation: allDoneAnim ? "pulse 2s ease infinite" : "none",
-        }}>
-          {/* Level + title */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <div>
-              <div style={{ fontSize: 28, color: "#D4AF37", fontWeight: 200, letterSpacing: 1 }}>
-                LEVEL {level}
-              </div>
-              <div style={{ fontSize: 13, color: "#D4AF37", opacity: 0.7 }}>{levelTitle}</div>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 24 }}>🔥</div>
-              <div style={{ fontSize: 12, opacity: 0.6 }}>{streak} يوم</div>
-            </div>
-          </div>
+.task.done{ opacity: 0.38; }
 
-          {/* XP numbers */}
-          <div style={{ display: "flex", justifyContent: "space-between", margin: "12px 0 6px", fontSize: 12, opacity: 0.6 }}>
-            <span>XP: {xp}</span>
-            <span>{progress} / {XP_PER_LEVEL} للمستوى التالي</span>
-          </div>
+/* Checkbox */
+.chk{
+  width: 22px; height: 22px;
+  border: 1.5px solid rgba(212,175,55,0.45);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
+}
 
-          {/* Progress bar */}
-          <div style={{ height: 8, background: "#111", borderRadius: 20, overflow: "hidden" }}>
-            <div style={{
-              height: "100%",
-              width: `${(progress / XP_PER_LEVEL) * 100}%`,
-              background: allDone
-                ? "linear-gradient(90deg, #D4AF37, #fff8a0, #D4AF37)"
-                : "#D4AF37",
-              backgroundSize: "200% auto",
-              animation: allDone ? "shimmer 2s linear infinite" : "none",
-              borderRadius: 20,
-              transition: "width 0.4s ease",
-            }} />
-          </div>
-        </div>
+.chk.on{
+  background: var(--gold);
+  border-color: var(--gold);
+  /* subtle bounce */
+  animation: chkBounce 0.3s cubic-bezier(.34,1.56,.64,1);
+}
 
-        {/* ── TASKS ── */}
-        <div style={{
-          background: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(212,175,55,0.12)",
-          borderRadius: 18,
-          padding: "6px 14px",
-          marginBottom: 12,
-        }}>
-          {TASKS.map((task, i) => (
-            <div
-              key={task.id}
-              onClick={() => toggle(task.id)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "13px 0",
-                borderBottom: i < TASKS.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
-                cursor: "pointer",
-                opacity: done[task.id] ? 0.4 : 1,
-                transition: "opacity 0.2s",
-              }}
-            >
-              {/* Checkbox */}
-              <div style={{
-                width: 20, height: 20,
-                border: done[task.id] ? "2px solid #D4AF37" : "1px solid rgba(212,175,55,0.5)",
-                borderRadius: 6,
-                background: done[task.id] ? "#D4AF37" : "transparent",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0,
-                transition: "all 0.2s",
-              }}>
-                {done[task.id] && (
-                  <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
-                    <path d="M1 4L4 7L10 1" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </div>
+@keyframes chkBounce{
+  0%  { transform: scale(0.7); }
+  100%{ transform: scale(1);   }
+}
 
-              <span style={{ fontSize: 17 }}>{task.icon}</span>
+.task-icon{ font-size:18px; }
+.task-label{ flex:1; font-size:15.5px; font-weight:400; letter-spacing:-0.2px; }
+.task-xp{ font-size:11px; color:var(--gold); opacity:0.4; }
 
-              <span style={{
-                flex: 1,
-                fontSize: 15,
-                textDecoration: done[task.id] ? "line-through" : "none",
-              }}>
-                {task.t}
-              </span>
+/* ── STATUS CARD ─────────────────────────────────── */
+.status{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.4s ease;
+  margin-bottom: 14px;
+}
 
-              <span style={{ fontSize: 11, color: "#D4AF37", opacity: 0.5 }}>+20</span>
-            </div>
-          ))}
-        </div>
+.status.all-done{
+  background: rgba(212,175,55,0.08);
+  border-color: rgba(212,175,55,0.5);
+  animation: statusPulse 2.5s ease infinite;
+}
 
-        {/* ── STATUS CARD ── */}
-        <div style={{
-          background: allDone ? "rgba(212,175,55,0.08)" : "rgba(255,255,255,0.03)",
-          border: `1px solid ${allDone ? "rgba(212,175,55,0.4)" : "rgba(212,175,55,0.12)"}`,
-          borderRadius: 16,
-          padding: "14px 18px",
-          textAlign: "center",
-          transition: "all 0.4s",
-        }}>
-          {allDone ? (
-            <>
-              <div style={{ fontSize: 22, marginBottom: 4 }}>✦</div>
-              <div style={{ color: "#D4AF37", fontSize: 15, fontWeight: 500 }}>أتممت يومك كاملاً — +30 XP مكافأة</div>
-            </>
-          ) : (
-            <>
-              <div style={{ fontSize: 13, opacity: 0.5, marginBottom: 4 }}>التقدم اليوم</div>
-              <div style={{ fontSize: 18, color: "#D4AF37" }}>{completed} / {TASKS.length}</div>
-              {completed === 0 && (
-                <div style={{ fontSize: 12, color: "#ff4d4d", marginTop: 6 }}>
-                  ⚠️ لو ما أتممت اليوم ستخسر 20 XP غداً
-                </div>
-              )}
-            </>
-          )}
-        </div>
+@keyframes statusPulse{
+  0%,100%{ box-shadow: 0 0 0 0 rgba(212,175,55,0.3); }
+  50%    { box-shadow: 0 0 0 10px rgba(212,175,55,0); }
+}
 
+.status-done-title{ color:var(--gold); font-size:16px; font-weight:500; }
+.status-done-sub  { font-size:12px; opacity:0.5; margin-top:4px; }
+.status-count     { font-size:22px; color:var(--gold); margin:4px 0; }
+.status-label     { font-size:12px; opacity:0.5; }
+.status-warn      { font-size:12px; color:var(--red); margin-top:8px; }
+
+/* ── MOTIVATIONAL QUOTE ─────────────────────────── */
+.quote{
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.25;
+  padding: 0 12px;
+  line-height: 1.7;
+  font-style: italic;
+}
+
+/* ── POPUP FEEDBACK ─────────────────────────────── */
+#popup{
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  padding: 8px 22px;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 15px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 999;
+  transition: none;
+}
+
+#popup.show{
+  animation: popUp 1.4s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+
+@keyframes popUp{
+  0%  { opacity:1; transform: translateX(-50%) translateY(0);    }
+  70% { opacity:1; transform: translateX(-50%) translateY(-20px);}
+  100%{ opacity:0; transform: translateX(-50%) translateY(-30px);}
+}
+
+/* ── SHIMMER (bar when all done) ────────────────── */
+.shimmer{
+  background: linear-gradient(90deg, var(--gold) 25%, var(--gold2) 50%, var(--gold) 75%);
+  background-size: 200% auto;
+  animation: shimmer 2s linear infinite;
+}
+
+@keyframes shimmer{
+  0%  { background-position: 200% center; }
+  100%{ background-position: -200% center;}
+}
+</style>
+</head>
+
+<body>
+<div id="popup"></div>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero" id="hero">
+    <div class="hero-top">
+      <div>
+        <div class="level-num" id="levelNum">LEVEL 1</div>
+        <div class="level-title" id="levelTitle">مبتدئ</div>
+      </div>
+      <div class="streak-box">
+        <span class="streak-fire">🔥</span>
+        <span class="streak-days" id="streakDays">0 يوم</span>
       </div>
     </div>
-  );
+
+    <div class="xp-row">
+      <span id="xpLeft">XP: 0</span>
+      <span id="xpRight">0 / 120</span>
+    </div>
+
+    <div class="bar">
+      <div class="fill" id="xpFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- TASKS -->
+  <div class="tasks-card" id="taskList"></div>
+
+  <!-- STATUS -->
+  <div class="status" id="status">
+    <div class="status-label">التقدم اليوم</div>
+    <div class="status-count" id="statusCount">0 / 5</div>
+    <div class="status-warn" id="statusWarn"></div>
+  </div>
+
+  <!-- QUOTE -->
+  <div class="quote" id="quote"></div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   HADI OS — Core Engine
+   بدون React — Vanilla JS خالص
+═══════════════════════════════════════════════ */
+
+/* ── DATA ───────────────────────────────────── */
+const TASKS = [
+  { id:"1", label:"تمارين",  icon:"⚽" },
+  { id:"2", label:"دراسة",   icon:"📚" },
+  { id:"3", label:"إنجليزي", icon:"🌐" },
+  { id:"4", label:"مهارة",   icon:"🛠️" },
+  { id:"5", label:"قراءة",   icon:"📖" },
+];
+
+const LEVEL_TITLES = ["مبتدئ","مثابر","منضبط","محترف","أسطورة"];
+
+const QUOTES = [
+  "الانضباط هو الحرية الحقيقية.",
+  "كل يوم صغير يبني نسخة أفضل منك.",
+  "لا تنتظر الحافز — ابدأ والحافز سيتبعك.",
+  "التكرار يصنع الأسطورة.",
+];
+
+const XP_PER_LEVEL = 120;
+const XP_TASK   = 20;   // per task check
+const XP_BONUS  = 30;   // all tasks done
+const XP_UNDO   = -15;  // uncheck penalty
+const XP_MISS   = -20;  // missed full day
+
+/* ── STORAGE ────────────────────────────────── */
+function load(k, def){ try{ return JSON.parse(localStorage.getItem(k)) ?? def; }catch{ return def; } }
+function save(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+
+let xp     = load("h-xp", 0);
+let streak = load("h-streak", 0);
+let done   = load("h-done", {});
+let last   = load("h-last", "");
+
+const today = new Date().toDateString();
+
+/* ── DAY-CHANGE ENGINE ──────────────────────── */
+if(last && last !== today){
+  const prev = Object.values(done).filter(Boolean).length;
+  if(prev === 0){
+    xp = Math.max(0, xp + XP_MISS);
+    streak = 0;
+  } else if(prev === TASKS.length){
+    streak++;
+  }
+  done = {};
 }
+save("h-last", today);
+
+/* ── AUDIO ENGINE ───────────────────────────── */
+// Web Audio API — no external files needed, pure sine tones
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+
+function playTone(freq, duration, type="sine", vol=0.18){
+  const osc = AC.createOscillator();
+  const gain = AC.createGain();
+  osc.connect(gain);
+  gain.connect(AC.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, AC.currentTime);
+  gain.gain.setValueAtTime(vol, AC.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + duration);
+  osc.start(AC.currentTime);
+  osc.stop(AC.currentTime + duration);
+}
+
+function sfxCheck(){
+  // two rising notes — satisfying
+  playTone(520, 0.08);
+  setTimeout(()=> playTone(780, 0.12), 80);
+}
+
+function sfxUncheck(){
+  playTone(400, 0.1, "sawtooth", 0.1);
+}
+
+function sfxAllDone(){
+  // triumphant chord sequence
+  [523, 659, 784, 1047].forEach((f, i) => {
+    setTimeout(()=> playTone(f, 0.25, "sine", 0.15), i * 80);
+  });
+}
+
+function sfxLevelUp(){
+  [440, 550, 660, 880].forEach((f, i) => {
+    setTimeout(()=> playTone(f, 0.2, "triangle", 0.2), i * 100);
+  });
+}
+
+// Resume AudioContext on first touch (iOS requirement)
+document.addEventListener("touchstart", ()=> AC.resume(), { once:true });
+document.addEventListener("click",      ()=> AC.resume(), { once:true });
+
+/* ── HAPTICS ────────────────────────────────── */
+function vibrate(pattern){ if(navigator.vibrate) navigator.vibrate(pattern); }
+
+/* ── POPUP ──────────────────────────────────── */
+const popupEl = document.getElementById("popup");
+
+function showPopup(text, positive=true){
+  popupEl.textContent = text;
+  popupEl.style.background = positive ? "rgba(212,175,55,0.95)" : "rgba(255,60,60,0.9)";
+  popupEl.style.color = positive ? "#000" : "#fff";
+  popupEl.classList.remove("show");
+  void popupEl.offsetWidth; // reflow trick to restart animation
+  popupEl.classList.add("show");
+}
+
+/* ── RENDER ENGINE ──────────────────────────── */
+function persist(){
+  save("h-xp", xp);
+  save("h-streak", streak);
+  save("h-done", done);
+}
+
+function render(){
+  persist();
+
+  const level    = Math.floor(xp / XP_PER_LEVEL) + 1;
+  const progress = xp % XP_PER_LEVEL;
+  const pct      = (progress / XP_PER_LEVEL) * 100;
+  const title    = LEVEL_TITLES[Math.min(level-1, LEVEL_TITLES.length-1)];
+  const completed = Object.values(done).filter(Boolean).length;
+  const allDone  = completed === TASKS.length;
+
+  // Hero
+  document.getElementById("levelNum").textContent   = `LEVEL ${level}`;
+  document.getElementById("levelTitle").textContent = title;
+  document.getElementById("streakDays").textContent = `${streak} يوم`;
+  document.getElementById("xpLeft").textContent     = `XP: ${xp}`;
+  document.getElementById("xpRight").textContent    = `${progress} / ${XP_PER_LEVEL}`;
+
+  const fill = document.getElementById("xpFill");
+  fill.style.width = pct + "%";
+  fill.className   = allDone ? "fill shimmer" : "fill";
+
+  // Status card
+  const statusEl = document.getElementById("status");
+  const countEl  = document.getElementById("statusCount");
+  const warnEl   = document.getElementById("statusWarn");
+
+  if(allDone){
+    statusEl.className = "status all-done";
+    statusEl.innerHTML = `<div class="status-done-title">✦ أتممت يومك كاملاً</div><div class="status-done-sub">+30 XP مكافأة مكتسبة</div>`;
+  } else {
+    statusEl.className = "status";
+    statusEl.innerHTML = `
+      <div class="status-label">التقدم اليوم</div>
+      <div class="status-count" id="statusCount">${completed} / ${TASKS.length}</div>
+      <div class="status-warn" id="statusWarn">${completed===0 ? "⚠️ إذا لم تُكمل اليوم ستخسر 20 XP غداً" : ""}</div>
+    `;
+  }
+
+  // Quote
+  const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  document.getElementById("quote").textContent = `"${q}"`;
+}
+
+/* ── BUILD TASK LIST ────────────────────────── */
+function buildTasks(){
+  const list = document.getElementById("taskList");
+  list.innerHTML = "";
+
+  TASKS.forEach(task => {
+    const row = document.createElement("div");
+    row.className = "task" + (done[task.id] ? " done" : "");
+    row.dataset.id = task.id;
+
+    row.innerHTML = `
+      <div class="chk ${done[task.id] ? 'on' : ''}" id="chk-${task.id}">
+        ${done[task.id] ? `<svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+          <path d="M1 5L4.5 8.5L11 1" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>` : ""}
+      </div>
+      <span class="task-icon">${task.icon}</span>
+      <span class="task-label">${task.label}</span>
+      <span class="task-xp">+20</span>
+    `;
+
+    // Press animation
+    row.addEventListener("pointerdown", ()=> row.classList.add("pressed"));
+    row.addEventListener("pointerup",   ()=> row.classList.remove("pressed"));
+    row.addEventListener("pointerleave",()=> row.classList.remove("pressed"));
+
+    row.addEventListener("click", ()=> toggleTask(task.id));
+    list.appendChild(row);
+  });
+}
+
+/* ── TOGGLE LOGIC ───────────────────────────── */
+function toggleTask(id){
+  AC.resume(); // ensure AudioContext active
+
+  const prevLevel = Math.floor(xp / XP_PER_LEVEL) + 1;
+  const wasChecked = done[id];
+
+  done[id] = !wasChecked;
+
+  const completed = Object.values(done).filter(Boolean).length;
+
+  if(!wasChecked){
+    // CHECKING
+    vibrate([40]);
+    sfxCheck();
+    xp += XP_TASK;
+
+    if(completed === TASKS.length){
+      xp += XP_BONUS;
+      showPopup(`+${XP_TASK + XP_BONUS} XP 🎉`);
+      setTimeout(sfxAllDone, 100);
+      vibrate([40, 30, 60]);
+    } else {
+      showPopup(`+${XP_TASK} XP`);
+    }
+  } else {
+    // UNCHECKING
+    vibrate([20]);
+    sfxUncheck();
+    xp = Math.max(0, xp + XP_UNDO);
+    showPopup(`${XP_UNDO} XP`, false);
+  }
+
+  // Level up?
+  const newLevel = Math.floor(xp / XP_PER_LEVEL) + 1;
+  if(newLevel > prevLevel){
+    setTimeout(()=>{
+      sfxLevelUp();
+      vibrate([60, 40, 80]);
+    }, 300);
+  }
+
+  buildTasks();
+  render();
+}
+
+/* ── INIT ───────────────────────────────────── */
+buildTasks();
+render();
+</script>
+</body>
+</html>
