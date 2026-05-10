@@ -333,9 +333,8 @@ body{
   <button class="nav-btn" data-screen="s-journal">
     <span class="nav-icon">✏️</span><span class="nav-label">يومياتي</span>
   </button>
-</nav>
-
-<script>
+  </nav>
+  <script>
 /* ══════════════════════════════════════════
    CONSTANTS
 ══════════════════════════════════════════ */
@@ -391,11 +390,23 @@ const today=new Date().toDateString();
 if(st.last && st.last!==today){
   const prev=Object.values(st.done).filter(Boolean).length;
   const total=st.tasks.length;
+
+  // احفظ أمس بالتاريخ الصح
   st.history[st.last]={score:total>0?Math.round((prev/total)*100):0,count:prev,total};
   S.set("h-history",st.history);
+
   if(prev===0){st.xp=Math.max(0,st.xp+XP_MISS);st.streak=0;}
   else if(prev===total){st.streak++;st.bossProgress=Math.min(st.bossProgress+1,BOSS_TARGET);}
+
+  // صفّر اليوم الجديد
   st.done={};
+  S.set("h-done",st.done);
+
+  // صفّر الـ boss كل أسبوع (كل يوم أحد)
+  if(new Date().getDay()===0){
+    st.bossProgress=0;
+    S.set("h-boss",st.bossProgress);
+  }
 }
 S.set("h-last",today);
 
